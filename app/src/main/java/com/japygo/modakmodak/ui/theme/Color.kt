@@ -2,10 +2,15 @@ package com.japygo.modakmodak.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val DeepNavy = Color(0xFF0F172A) // Tailwind navy-deep
+val FireOrange = Color(0xFFFFA600) // Tailwind primary
+val Gold = Color(0xFFFFD700)
+val Orange = Color(0xFFFFA500)
+val DarkGrayNavy = Color(0xFF1E293B) // Tailwind navy-light
+val White = Color(0xFFFFFFFF)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Additional colors from design
+val BackgroundDark = Color(0xFF231C0F) // background-dark
+val SurfaceDark = Color(0xFF2E2516) // surface-dark
+val SurfaceHighlight = Color(0xFF4B3C20) // surface-highlight
+val TextSecondary = Color(0xFFCEB78D) // text-secondary

@@ -1,0 +1,153 @@
+<resources>
+    <string name="app_name">모닥모닥</string>
+
+    <!-- Common -->
+    <string name="common_confirm">확인</string>
+    <string name="common_cancel">취소</string>
+    <string name="common_reset">초기화</string>
+    <string name="common_stop">중단</string>
+    <string name="common_continue">계속하기</string>
+
+    <!-- Navigation -->
+    <string name="nav_shop">상점</string>
+    <string name="nav_bag">가방</string>
+    <string name="nav_home">홈</string>
+    <string name="nav_stats">통계</string>
+    <string name="nav_settings">설정</string>
+
+    <!-- Home Screen -->
+    <string name="home_timer_adjust_hint">터치하여 시간 조절</string>
+    <string name="home_start_button">모닥모닥 시작하기</string>
+    <string name="home_preset_dialog_title">타이머 선택</string>
+    <string name="home_preset_dialog_custom">직접 입력</string>
+    <string name="home_preset_dialog_subtitle">저장된 프리셋</string>
+    <string name="home_preset_dialog_empty">저장된 프리셋이 없습니다.</string>
+    <string name="home_custom_timer_title">커스텀 타이머 설정</string>
+
+    <!-- Focus Screen -->
+    <string name="focus_exit_dialog_title">집중 중단 확인</string>
+    <string name="focus_exit_dialog_text">지금 나가면 진행 중인 집중 시간이 기록되지 않고 코인을 얻을 수 없습니다. 정말 중단하시겠습니까?</string>
+    <string name="focus_default_tag">집중 모드</string>
+    <string name="focusing_text">집중하는 중...</string>
+    <string name="focus_paused_text">일시 정지됨</string>
+    <string name="focus_give_up_button">3초간 눌러서 포기하기</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_heatmap_title">집중 히트맵</string>
+    <string name="stats_logs_title">최근 기록</string>
+    <string name="stats_summary_total_focus">총 집중 시간</string>
+    <string name="stats_summary_success_rate">성공률</string>
+    <string name="stats_date_format">yyyy년 M월</string>
+    <string name="stats_log_default_title">집중 세션</string>
+    <string name="stats_log_given_up_suffix"> (중단함)</string>
+
+    <!-- Weekdays -->
+    <string name="day_mon">월</string>
+    <string name="day_tue">화</string>
+    <string name="day_wed">수</string>
+    <string name="day_thu">목</string>
+    <string name="day_fri">금</string>
+    <string name="day_sat">토</string>
+    <string name="day_sun">일</string>
+
+    <!-- Shop Screen -->
+    <string name="shop_tab_store">상점</string>
+    <string name="shop_tab_inventory">인벤토리</string>
+    <string name="shop_inventory_empty">가방이 비어있습니다.</string>
+    <string name="shop_inventory_use_hint">터치하여 사용</string>
+    <string name="shop_inventory_depleted">소진됨</string>
+    <string name="shop_bought_item">%1$s 구매 완료!</string>
+    <string name="shop_buy_failed">%1$s 구매 실패 (코인이 부족한가요?)</string>
+    <string name="shop_used_item">아이템을 사용했습니다!</string>
+    <string name="shop_use_failed">아이템 사용 실패</string>
+    <string name="shop_total_price">합계</string>
+
+    <!-- Item Names -->
+    <string name="item_wood_twig_name">잔가지 묶음</string>
+    <string name="item_wood_log_name">마른 장작</string>
+    <string name="item_wood_big_name">우량 통나무</string>
+    <string name="item_magic_blue_name">오로라 가루</string>
+
+    <!-- Item Descriptions -->
+    <string name="item_wood_twig_desc">작지만 소중한 불씨</string>
+    <string name="item_wood_log_desc">모닥모닥 기본 연료</string>
+    <string name="item_wood_big_desc">오래 타오르는 통나무</string>
+    <string name="item_magic_blue_desc">신비로운 파란 불꽃</string>
+
+    <!-- Break Screen -->
+    <string name="break_title">수고하셨습니다!</string>
+    <string name="break_skip_button">휴식 건너뛰기</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">설정</string>
+    <string name="settings_section_language">언어 설정</string>
+    <string name="settings_language_en">English (영어)</string>
+    <string name="settings_language_ko">한국어</string>
+    <string name="settings_section_sound">소리 및 진동</string>
+    <string name="settings_volume_bgm">BGM 볼륨</string>
+    <string name="settings_volume_sfx">SFX 볼륨</string>
+    <string name="settings_toggle_vibration">진동</string>
+    <string name="settings_toggle_notifications">앱 알림</string>
+    <string name="settings_section_focus">집중 모드</string>
+    <string name="settings_toggle_screen_on">화면 켜짐 유지</string>
+    <string name="settings_section_break">휴식 시간</string>
+    <string name="settings_toggle_break_screen">휴식 화면 사용</string>
+    <string name="settings_break_duration">휴식 시간</string>
+    <string name="settings_toggle_break_timer">휴식 타이머 표시</string>
+    <string name="settings_section_presets">프리셋 설정</string>
+    <string name="settings_presets_empty">저장된 프리셋이 없습니다. 기본값으로 설정할 프리셋을 추가해보세요.</string>
+    <string name="settings_preset_label">프리셋</string>
+    <string name="settings_section_account">계정 및 데이터</string>
+    <string name="settings_reset_data">모든 데이터 초기화</string>
+    <string name="settings_section_info">앱 정보</string>
+    <string name="settings_version_label">버전</string>
+    <string name="settings_reset_dialog_title">모든 데이터를 초기화하시겠습니까?</string>
+    <string name="settings_reset_dialog_text">이 작업은 코인, 인벤토리, 학습 기록을 모두 삭제하며 되돌릴 수 없습니다.</string>
+    <string name="settings_add_preset_title">새 프리셋 추가</string>
+    <string name="settings_edit_preset_title">프리셋 수정</string>
+    <string name="settings_preset_dialog_default_title">프리셋 추가</string>
+    <string name="settings_preset_dialog_tag_label">태그 이름 (예: #공부)</string>
+    <string name="settings_preset_dialog_duration_label">시간</string>
+    <string name="settings_preset_dialog_hrs">시간</string>
+    <string name="settings_preset_dialog_mins">분</string>
+    <string name="settings_preset_dialog_error_min">시간은 최소 1분 이상이어야 합니다.</string>
+
+    <!-- Notifications -->
+    <string name="notif_study_finished_title">집중 완료! 🔥</string>
+    <string name="notif_study_finished_text">정말 고생 많으셨어요. 이제 따뜻한 휴식을 취해볼까요?</string>
+    <string name="notif_channel_name">타이머 알림</string>
+    <string name="notif_channel_desc">학습 및 휴식 타이머 알림</string>
+    <string name="notif_break_finished_title">휴식 끝! ✨</string>
+    <string name="notif_break_finished_text">충분히 쉬셨나요? 다시 따뜻한 집중을 시작해봐요.</string>
+
+    <!-- Break Messages Level 1 -->
+    <string name="break_msg_level1_1">방금의 한 걸음이 당신을 더 멀리 데려다줄 거예요. 정말 잘하셨어요.</string>
+    <string name="break_msg_level1_2">집중의 불씨를 지핀 것만으로도 충분해요. 잠시 숨을 고르며 마음을 어루만져 주세요.</string>
+    <string name="break_msg_level1_3">당신의 속도로 천천히 나아가도 괜찮아요. 지금 이 순간도 충분히 가치 있답니다.</string>
+    <string name="break_msg_level1_4">애쓰셨어요. 스스로에게 \'수고했어\'라고 따뜻하게 한마디 건네보면 어떨까요?</string>
+
+    <!-- Break Messages Level 2 -->
+    <string name="break_msg_level2_1">마음의 온도를 높이는 시간이었네요. 당신의 정성이 느껴져서 참 따뜻합니다.</string>
+    <string name="break_msg_level2_2">차분하게 몰입한 당신의 모습이 참 아름다워요. 잠시 눈을 감고 마음의 평온을 느껴보세요.</string>
+    <string name="break_msg_level2_3">어려운 순간도 있었겠지만, 끝내 집중해낸 당신이 대견합니다. 정성껏 쉬어주세요.</string>
+    <string name="break_msg_level2_4">당신이 머문 자리마다 성장의 향기가 배어있네요. 참으로 고생 많으셨습니다.</string>
+
+    <!-- Break Messages Level 3 -->
+    <string name="break_msg_level3_1">깊은 몰입 속에서 자신을 만나는 시간이었군요. 당신의 열정이 참으로 귀합니다.</string>
+    <string name="break_msg_level3_2">세상의 소음을 잠재우고 내면에 집중한 당신에게 따뜻한 위로를 전합니다.</string>
+    <string name="break_msg_level3_3">긴 시간 동안 묵묵히 자리를 지킨 당신의 뒷모습이 참 든든하고 멋져요.</string>
+    <string name="break_msg_level3_4">마음의 근육이 단단해지는 소리가 들리는 것 같아요. 충분히 쉴 자격이 있답니다.</string>
+
+    <!-- Break Messages Level 4 -->
+    <string name="break_msg_level4_1">무언가에 이토록 진심인 당신을 진심으로 응원합니다. 당신의 밤이, 혹은 낮이 빛나고 있네요.</string>
+    <string name="break_msg_level4_2">지칠 법도 한데 흔들림 없이 나아가는 모습이 감동적이에요. 이제는 긴장을 풀고 푹 쉬세요.</string>
+    <string name="break_msg_level4_3">활활 타오르는 모닥불처럼 당신의 열정이 주변을 밝히고 있어요. 참 고맙고 수고하셨습니다.</string>
+    <string name="break_msg_level4_4">긴 여정을 마치고 돌아온 당신을 위해 따뜻한 차 한 잔의 여유를 선물하고 싶어요.</string>
+
+    <!-- Break Messages Level 5 -->
+    <string name="break_msg_level5_1">한계를 넘어서는 당신의 여정에 경의를 표합니다. 당신의 노력이 헛되지 않음을 믿어요.</string>
+    <string name="break_msg_level5_2">누구보다 간절하게, 그리고 찬란하게 빛난 시간이었어요. 당신이라는 불꽃이 정말 자랑스럽습니다.</string>
+    <string name="break_msg_level5_3">세상에 단 하나뿐인 당신만의 길을 묵묵히 걷는 당신, 당신은 이미 영웅입니다.</string>
+    <string name="break_msg_level5_4">이제 모든 걸 내려놓고 깊은 평화 속에 머무세요. 당신의 오늘은 완벽했습니다.</string>
+
+</resources>

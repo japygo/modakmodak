@@ -1,3 +1,153 @@
 <resources>
     <string name="app_name">ModakModak</string>
+
+    <!-- Common -->
+    <string name="common_confirm">Confirm</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_reset">Reset</string>
+    <string name="common_stop">Stop</string>
+    <string name="common_continue">Continue</string>
+
+    <!-- Navigation -->
+    <string name="nav_shop">Shop</string>
+    <string name="nav_bag">Bag</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home Screen -->
+    <string name="home_timer_adjust_hint">Touch to adjust time</string>
+    <string name="home_start_button">Start ModakModak</string>
+    <string name="home_preset_dialog_title">Select Timer</string>
+    <string name="home_preset_dialog_custom">Manual Input</string>
+    <string name="home_preset_dialog_subtitle">Saved Presets</string>
+    <string name="home_preset_dialog_empty">No saved presets.</string>
+    <string name="home_custom_timer_title">Custom Timer Settings</string>
+
+    <!-- Focus Screen -->
+    <string name="focus_exit_dialog_title">Stop Focus?</string>
+    <string name="focus_exit_dialog_text">If you exit now, your focus time won\'t be recorded and you won\'t earn coins. Do you really want to stop?</string>
+    <string name="focus_default_tag">Focus Mode</string>
+    <string name="focusing_text">Focusing...</string>
+    <string name="focus_paused_text">Paused</string>
+    <string name="focus_give_up_button">Hold for 3s to give up</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_heatmap_title">Study Heatmap</string>
+    <string name="stats_logs_title">Recent Logs</string>
+    <string name="stats_summary_total_focus">Total Focus</string>
+    <string name="stats_summary_success_rate">Success Rate</string>
+    <string name="stats_date_format">MMMM yyyy</string>
+    <string name="stats_log_default_title">Focus Session</string>
+    <string name="stats_log_given_up_suffix"> (Given Up)</string>
+
+    <!-- Weekdays -->
+    <string name="day_mon">M</string>
+    <string name="day_tue">T</string>
+    <string name="day_wed">W</string>
+    <string name="day_thu">T</string>
+    <string name="day_fri">F</string>
+    <string name="day_sat">S</string>
+    <string name="day_sun">S</string>
+
+    <!-- Shop Screen -->
+    <string name="shop_tab_store">Store</string>
+    <string name="shop_tab_inventory">Inventory</string>
+    <string name="shop_inventory_empty">Your bag is empty.</string>
+    <string name="shop_inventory_use_hint">Touch to use</string>
+    <string name="shop_inventory_depleted">Depleted</string>
+    <string name="shop_bought_item">Bought %1$s!</string>
+    <string name="shop_buy_failed">Failed to buy %1$s (Not enough coins?)</string>
+    <string name="shop_used_item">Used item!</string>
+    <string name="shop_use_failed">Failed to use item</string>
+    <string name="shop_total_price">Total</string>
+
+    <!-- Item Names -->
+    <string name="item_wood_twig_name">Twig Bundle</string>
+    <string name="item_wood_log_name">Dry Wood</string>
+    <string name="item_wood_big_name">Premium Log</string>
+    <string name="item_magic_blue_name">Aurora Powder</string>
+
+    <!-- Item Descriptions -->
+    <string name="item_wood_twig_desc">Small but precious spark</string>
+    <string name="item_wood_log_desc">Standard Modak fuel</string>
+    <string name="item_wood_big_desc">Long-burning log</string>
+    <string name="item_magic_blue_desc">Mysterious blue flame</string>
+
+    <!-- Break Screen -->
+    <string name="break_title">Well done!</string>
+    <string name="break_skip_button">Skip Break</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_language">App Language</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_ko">한국어 (Korean)</string>
+    <string name="settings_section_sound">Sound &amp; Haptics</string>
+    <string name="settings_volume_bgm">BGM Volume</string>
+    <string name="settings_volume_sfx">SFX Volume</string>
+    <string name="settings_toggle_vibration">Vibration</string>
+    <string name="settings_toggle_notifications">App Notifications</string>
+    <string name="settings_section_focus">Focus Mode</string>
+    <string name="settings_toggle_screen_on">Keep Screen On</string>
+    <string name="settings_section_break">Break Time</string>
+    <string name="settings_toggle_break_screen">Enable Break Screen</string>
+    <string name="settings_break_duration">Break Duration</string>
+    <string name="settings_toggle_break_timer">Show Break Timer</string>
+    <string name="settings_section_presets">Timer Presets</string>
+    <string name="settings_presets_empty">No presets added yet. Add one to set as default.</string>
+    <string name="settings_preset_label">Preset</string>
+    <string name="settings_section_account">Account &amp; Data</string>
+    <string name="settings_reset_data">Reset All Data</string>
+    <string name="settings_section_info">App Info</string>
+    <string name="settings_version_label">Version</string>
+    <string name="settings_reset_dialog_title">Reset All Data?</string>
+    <string name="settings_reset_dialog_text">This will delete all your coins, inventory, and study logs. This action cannot be undone.</string>
+    <string name="settings_add_preset_title">Add New Preset</string>
+    <string name="settings_edit_preset_title">Edit Preset</string>
+    <string name="settings_preset_dialog_default_title">Add Preset</string>
+    <string name="settings_preset_dialog_tag_label">Tag Name (e.g. #study)</string>
+    <string name="settings_preset_dialog_duration_label">Duration</string>
+    <string name="settings_preset_dialog_hrs">Hrs</string>
+    <string name="settings_preset_dialog_mins">Mins</string>
+    <string name="settings_preset_dialog_error_min">Duration must be at least 1 minute.</string>
+
+    <!-- Notifications -->
+    <string name="notif_study_finished_title">Focus Finished! 🔥</string>
+    <string name="notif_study_finished_text">You did a great job. Shall we take a warm break?</string>
+    <string name="notif_channel_name">Timer Notifications</string>
+    <string name="notif_channel_desc">Notifications for study and break timers</string>
+    <string name="notif_break_finished_title">Break Finished! ✨</string>
+    <string name="notif_break_finished_text">Did you rest enough? Let\'s start a warm focus session again.</string>
+
+    <!-- Break Messages Level 1 -->
+    <string name="break_msg_level1_1">That one step you just took will take you further. Great job.</string>
+    <string name="break_msg_level1_2">Just lighting the fire of focus is enough. Take a moment to catch your breath.</string>
+    <string name="break_msg_level1_3">It\'s okay to go slowly at your own pace. This moment is valuable enough.</string>
+    <string name="break_msg_level1_4">You worked hard. Why not say a warm \"Well done\" to yourself?</string>
+
+    <!-- Break Messages Level 2 -->
+    <string name="break_msg_level2_1">It was a time to raise the temperature of your heart. I can feel your sincerity.</string>
+    <string name="break_msg_level2_2">Your form, calmly immersed, is truly beautiful. Close your eyes and feel the peace.</string>
+    <string name="break_msg_level2_3">There might have been difficult moments, but you did well to focus. Please rest well.</string>
+    <string name="break_msg_level2_4">The scent of growth is in every place you stayed. Thank you for your hard work.</string>
+
+    <!-- Break Messages Level 3 -->
+    <string name="break_msg_level3_1">It was a time to meet yourself in deep immersion. Your passion is truly precious.</string>
+    <string name="break_msg_level3_2">I offer warm comfort to you, who focused on your inner self while silencing the world.</string>
+    <string name="break_msg_level3_3">Your back, silently keeping your place for a long time, is truly reliable and cool.</string>
+    <string name="break_msg_level3_4">I think I can hear your heart muscles getting stronger. You deserve a good rest.</string>
+
+    <!-- Break Messages Level 4 -->
+    <string name="break_msg_level4_1">I sincerely support you, who are so sincere about something. Your night, or day, is shining.</string>
+    <string name="break_msg_level4_2">It\'s impressive that you keep going without shaking even though you must be tired. Now relax and rest well.</string>
+    <string name="break_msg_level4_3">Like a burning bonfire, your passion is lighting up the surroundings. Thank you and well done.</string>
+    <string name="break_msg_level4_4">I want to gift you a relax with a warm cup of tea, who has returned from a long journey.</string>
+
+    <!-- Break Messages Level 5 -->
+    <string name="break_msg_level5_1">I pay respect to your journey beyond the limits. I believe your efforts will not be in vain.</string>
+    <string name="break_msg_level5_2">It was a time that shone more desperately and brilliantly than anyone else. I\'m so proud of your flame.</string>
+    <string name="break_msg_level5_3">You, who silently walk your own unique path in the world, are already a hero.</string>
+    <string name="break_msg_level5_4">Now let everything go and stay in deep peace. Your today was perfect.</string>
+
 </resources>
