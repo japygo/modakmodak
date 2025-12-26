@@ -23,6 +23,8 @@
     <string name="home_preset_dialog_subtitle">저장된 프리셋</string>
     <string name="home_preset_dialog_empty">저장된 프리셋이 없습니다.</string>
     <string name="home_custom_timer_title">커스텀 타이머 설정</string>
+    <string name="home_level_prefix">Lv.</string>
+
 
     <!-- Focus Screen -->
     <string name="focus_exit_dialog_title">집중 중단 확인</string>
@@ -76,7 +78,7 @@
 
     <!-- Break Screen -->
     <string name="break_title">수고하셨습니다!</string>
-    <string name="break_skip_button">휴식 건너뛰기</string>
+    <string name="break_skip_button">휴식 마치기</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">설정</string>

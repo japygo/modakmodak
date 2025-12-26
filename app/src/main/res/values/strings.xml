@@ -23,6 +23,8 @@
     <string name="home_preset_dialog_subtitle">Saved Presets</string>
     <string name="home_preset_dialog_empty">No saved presets.</string>
     <string name="home_custom_timer_title">Custom Timer Settings</string>
+    <string name="home_level_prefix">Lv.</string>
+
 
     <!-- Focus Screen -->
     <string name="focus_exit_dialog_title">Stop Focus?</string>
@@ -76,7 +78,7 @@
 
     <!-- Break Screen -->
     <string name="break_title">Well done!</string>
-    <string name="break_skip_button">Skip Break</string>
+    <string name="break_skip_button">Finish Break</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>

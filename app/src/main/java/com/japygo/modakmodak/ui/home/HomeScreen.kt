@@ -65,6 +65,7 @@ import com.japygo.modakmodak.ui.theme.SurfaceDark
 import com.japygo.modakmodak.ui.theme.SurfaceHighlight
 import com.japygo.modakmodak.ui.theme.TextSecondary
 import com.japygo.modakmodak.ui.theme.White
+import com.japygo.modakmodak.utils.LevelUtils
 
 @Composable
 fun HomeScreen(
@@ -93,7 +94,14 @@ fun HomeScreen(
             .statusBarsPadding()
             .navigationBarsPadding(),
         containerColor = BackgroundDark,
-        topBar = { HomeTopBar(navController, user?.currentCoin ?: 0) },
+        topBar = { 
+            HomeTopBar(
+                navController = navController, 
+                coins = user?.currentCoin ?: 0,
+                level = user?.fireLevel ?: 1,
+                exp = user?.fireExp ?: 0
+            ) 
+        },
         bottomBar = { ModakBottomBar(navController, "home") },
     ) { innerPadding ->
         Column(
@@ -109,15 +117,20 @@ fun HomeScreen(
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
-                // Background size scales with character
+                // Background size scales with character - enlarged for better glow
+                val glowSize = backgroundSize * 2.0f
                 Box(
                     modifier = Modifier
-                        .size(backgroundSize)
+                        .size(glowSize)
                         .background(
                             brush = Brush.radialGradient(
-                                colors = listOf(fireColor.copy(alpha = 0.6f), Color.Transparent),
-                            ),
-                            shape = CircleShape,
+                                colors = listOf(
+                                    fireColor.copy(alpha = 0.5f),
+                                    fireColor.copy(alpha = 0.2f),
+                                    fireColor.copy(alpha = 0.05f),
+                                    Color.Transparent
+                                ),
+                            )
                         ),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -130,7 +143,7 @@ fun HomeScreen(
                         scale = characterScale,
                         clipToBounds = false,
                         modifier = Modifier
-                            .size(200.dp)
+                            .size(240.dp)
                             .padding(bottom = 20.dp),
                     )
                 }
@@ -361,19 +374,27 @@ fun PresetSelectionDialog(
 }
 
 @Composable
-fun HomeTopBar(navController: NavController, coins: Int) {
+fun HomeTopBar(
+    navController: NavController,
+    coins: Int,
+    level: Int,
+    exp: Int
+) {
+    val fireColor = getFireColorByLevel(level)
+    val progress = LevelUtils.getLevelProgress(exp)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .height(72.dp)
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Coin chip moved to left
+        // Left: Coin chip
         Row(
             modifier = Modifier
-                .clip(RoundedCornerShape(20))
+                .clip(RoundedCornerShape(20.dp))
                 .background(SurfaceHighlight.copy(alpha = 0.5f))
                 .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -391,6 +412,36 @@ fun HomeTopBar(navController: NavController, coins: Int) {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
             )
+        }
+
+        // Right: Level and Exp Bar
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "${stringResource(R.string.home_level_prefix)}$level",
+                color = White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            // Custom thin progress bar
+            Box(
+                modifier = Modifier
+                    .width(80.dp)
+                    .height(4.dp)
+                    .clip(CircleShape)
+                    .background(SurfaceHighlight.copy(alpha = 0.3f))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress)
+                        .height(4.dp)
+                        .clip(CircleShape)
+                        .background(fireColor)
+                )
+            }
         }
     }
 }

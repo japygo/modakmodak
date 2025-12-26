@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -25,6 +26,9 @@ class FocusViewModel(
 
     val isNotificationEnabled: StateFlow<Boolean> = settingsRepository.isNotificationEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val user = repository.userFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val _timeLeft = MutableStateFlow(0)
     val timeLeft: StateFlow<Int> = _timeLeft.asStateFlow()

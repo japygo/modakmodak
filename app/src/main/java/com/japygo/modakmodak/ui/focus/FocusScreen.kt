@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -46,13 +48,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.japygo.modakmodak.R
+import com.japygo.modakmodak.ui.components.ModakCharacter
 import com.japygo.modakmodak.ui.theme.DeepNavy
 import com.japygo.modakmodak.ui.theme.FireOrange
+import com.japygo.modakmodak.ui.theme.SurfaceHighlight
 import com.japygo.modakmodak.ui.theme.White
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
 
 // Alias Primary to FireOrange for consistency with plan if needed, 
 // or simpler: use FireOrange directly.
@@ -67,9 +75,20 @@ fun FocusScreen(
     val isFocusing by viewModel.isFocusing.collectAsState()
     val sessionState by viewModel.sessionState.collectAsState()
     val isBreakEnabled by viewModel.isBreakEnabled.collectAsState()
+    val user by viewModel.user.collectAsState()
 
-    // 네비게이션 인자로 전달받은 시간은 NavGraph에서 viewModel.startTimer(duration)을 통해 시작됩니다.
-    // 기존의 중복된 auto-start 로직은 삭제합니다.
+    // Status bar and Navigation bar color adjustment
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as? android.app.Activity)?.window
+        window?.let {
+            it.statusBarColor = DeepNavy.toArgb()
+            it.navigationBarColor = DeepNavy.toArgb()
+            val controller = WindowCompat.getInsetsController(it, view)
+            controller.isAppearanceLightStatusBars = false
+            controller.isAppearanceLightNavigationBars = false
+        }
+    }
 
     var showExitDialog by remember { mutableStateOf(false) }
 
@@ -149,146 +168,176 @@ fun FocusScreen(
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
-
-            // Tag
-            Surface(
-                color = Color(0xFF3A2E1E),
-                shape = RoundedCornerShape(50),
-                border = null, // Border logic if needed
-                modifier = Modifier.padding(bottom = 30.dp),
+            // Top section for character (1.8f for slightly higher position)
+            Column(
+                modifier = Modifier
+                    .weight(1.8f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                // Character and Glow Section
+                val fireColor = getFireColorByLevel(user?.fireLevel ?: 1)
+                val characterScale = if (isFocusing) 1.05f else 1.0f
+                val glowSize = 500.dp * characterScale
+
+                Box(
+                    modifier = Modifier.size(glowSize),
+                    contentAlignment = Alignment.Center,
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        fireColor.copy(alpha = 0.5f),
+                                        fireColor.copy(alpha = 0.2f),
+                                        fireColor.copy(alpha = 0.05f),
+                                        Color.Transparent
+                                    ),
+                                ),
+                            ),
+                    )
+
+                    ModakCharacter(
+                        flameColor = fireColor,
+                        scale = characterScale,
+                        clipToBounds = false,
+                        modifier = Modifier
+                            .size(240.dp)
+                            .padding(bottom = 20.dp),
+                    )
+                }
+            }
+
+            // Bottom section for information and button (1.2f)
+            Column(
+                modifier = Modifier
+                    .weight(1.2f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+            ) {
+                // Timer - Placed at the top of this section
+                Text(
+                    text = formatTime(timeLeft),
+                    color = White,
+                    fontSize = 80.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-2).sp,
+                )
+
+                // Spacer to push labels to center between timer and button
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Mid section: Tag and Status Text
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     val rawTag = navController.currentBackStackEntry?.arguments?.getString("tag")
                         ?: stringResource(R.string.focus_default_tag)
                     val currentTag = Uri.decode(rawTag)
-                    Icon(
-                        Icons.Default.School,
-                        contentDescription = null,
-                        tint = FireOrange,
-                        modifier = Modifier.size(20.dp),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Surface(
+                        color = SurfaceHighlight.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(50),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                Icons.Default.School,
+                                contentDescription = null,
+                                tint = FireOrange.copy(alpha = 0.8f),
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                currentTag,
+                                color = White.copy(alpha = 0.7f),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    
                     Text(
-                        currentTag,
-                        color = White.copy(alpha = 0.9f),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        text = if (isFocusing) stringResource(R.string.focusing_text) else stringResource(R.string.focus_paused_text),
+                        color = FireOrange,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 2.sp,
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.weight(1f))
+                // Spacer to push button to bottom
+                Spacer(modifier = Modifier.weight(1f))
 
-            // Fire Visual Placeholder (Bonfire)
-            Box(
-                modifier = Modifier
-                    .size(300.dp)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(FireOrange.copy(alpha = 0.2f), Color.Transparent),
-                        ),
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                // Inner Core - Modak Character
-                Image(
-                    painter = painterResource(id = R.drawable.default_modak),
-                    contentDescription = "Focus Modak",
-                    modifier = Modifier
-                        .size(180.dp)
-                        .scale(if (isFocusing) 1.05f else 1.0f), // Breathing effect
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Timer
-            Text(
-                text = formatTime(timeLeft),
-                color = White,
-                fontSize = 80.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-2).sp,
-            )
-            Text(
-                text = if (isFocusing) stringResource(R.string.focusing_text) else stringResource(R.string.focus_paused_text),
-                color = FireOrange,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 2.sp,
-                modifier = Modifier.padding(top = 8.dp),
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Give Up Button (Long Press with Progress)
-            var isHolding by remember { mutableStateOf(false) }
-            val progress by animateFloatAsState(
-                targetValue = if (isHolding) 1f else 0f,
-                animationSpec = androidx.compose.animation.core.tween(durationMillis = if (isHolding) 3000 else 300),
-                label = "GiveUpProgress",
-                finishedListener = {
-                    if (isHolding) {
-                        // Finished while holding -> Success
-                        viewModel.stopTimer()
-                        navController.popBackStack()
-                    }
-                },
-            )
-
-            Box(
-                modifier = Modifier
-                    .padding(bottom = 50.dp)
-                    .width(280.dp)
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(Color(0xFF2D2416))
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = {
-                                isHolding = true
-                                try {
-                                    awaitRelease()
-                                } finally {
-                                    isHolding = false
-                                }
-                            },
-                        )
+                // Give Up Button
+                var isHolding by remember { mutableStateOf(false) }
+                val progress by animateFloatAsState(
+                    targetValue = if (isHolding) 1f else 0f,
+                    animationSpec = androidx.compose.animation.core.tween(durationMillis = if (isHolding) 3000 else 300),
+                    label = "GiveUpProgress",
+                    finishedListener = {
+                        if (isHolding) {
+                            viewModel.stopTimer()
+                            navController.popBackStack()
+                        }
                     },
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                // Progress Fill Layer
+                )
+
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(progress) // Fill based on progress
-                        .background(FireOrange.copy(alpha = 0.5f)),
-                )
-
-                // Button Content
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
+                        .fillMaxWidth()
+                        .padding(horizontal = 48.dp)
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(Color(0xFF2D2416))
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    isHolding = true
+                                    try {
+                                        awaitRelease()
+                                    } finally {
+                                        isHolding = false
+                                    }
+                                },
+                            )
+                        },
+                    contentAlignment = Alignment.CenterStart,
                 ) {
-                    Icon(
-                        Icons.Default.TouchApp,
-                        contentDescription = null,
-                        tint = White.copy(alpha = 0.5f),
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(progress)
+                            .background(FireOrange.copy(alpha = 0.5f)),
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        stringResource(R.string.focus_give_up_button),
-                        color = White.copy(alpha = 0.8f),
-                        fontWeight = FontWeight.Bold,
-                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Icon(
+                            Icons.Default.TouchApp,
+                            contentDescription = null,
+                            tint = White.copy(alpha = 0.5f),
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            stringResource(R.string.focus_give_up_button),
+                            color = White.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                 }
+                
+                // Bottom margin
+                Spacer(modifier = Modifier.height(40.dp))
             }
         }
     }
@@ -302,5 +351,19 @@ fun formatTime(seconds: Int): String {
         "%02d:%02d:%02d".format(h, m, s)
     } else {
         "%02d:%02d".format(m, s)
+    }
+}
+
+/**
+ * Returns the fire color based on the user's level
+ * (Sync with HomeScreen.kt)
+ */
+private fun getFireColorByLevel(level: Int): Color {
+    return when (level) {
+        in 1..5 -> Color(0xFFFF9500) // Orange
+        in 6..10 -> Color(0xFFFF6B35) // Red-Orange
+        in 11..15 -> Color(0xFFFF3B30) // Red
+        in 16..20 -> Color(0xFFFF2D92) // Purple-Red
+        else -> Color(0xFFBF5AF2) // Blue-Purple (21+)
     }
 }
