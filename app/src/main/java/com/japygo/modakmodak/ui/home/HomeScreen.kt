@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -173,6 +174,8 @@ fun HomeScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     contentPadding = PaddingValues(0.dp),
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 48.dp)
                         .height(56.dp)
                         .clip(RoundedCornerShape(28.dp))
                         .background(
@@ -187,6 +190,8 @@ fun HomeScreen(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 24.dp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -265,7 +270,13 @@ fun PresetSelectionDialog(
                             FilterChip(
                                 selected = isSelected,
                                 onClick = { onPresetSelect(preset) },
-                                label = { Text("${preset.tag} (${preset.durationMinutes}m)") },
+                                label = {
+                                    Text(
+                                        text = "${preset.tag} (${preset.durationMinutes}m)",
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = FireOrange.copy(alpha = 0.2f),
                                     selectedLabelColor = FireOrange,

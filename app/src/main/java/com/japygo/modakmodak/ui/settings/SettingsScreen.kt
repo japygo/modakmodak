@@ -64,6 +64,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -309,53 +310,24 @@ fun TimerPresetsSection(
                 colors = CardDefaults.cardColors(
                     containerColor = SurfaceDark,
                 ),
-                border = if (preset.isSelected) BorderStroke(
-                    1.dp,
-                    FireOrange.copy(alpha = 0.5f),
-                ) else null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.weight(1f),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Label,
-                                contentDescription = null,
-                                tint = FireOrange,
-                                modifier = Modifier.size(18.dp),
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                stringResource(R.string.settings_preset_label),
-                                color = FireOrange,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                        IconButton(
-                            onClick = { onDeleteClick(preset) },
-                            modifier = Modifier.size(24.dp),
-                        ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = Color.Red.copy(alpha = 0.5f),
-                                modifier = Modifier.size(18.dp),
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth()) {
                         Surface(
-                            color = SurfaceHighlight.copy(alpha = if (preset.isSelected) 0.3f else 0.15f),
+                            color = SurfaceHighlight.copy(alpha = 0.15f),
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
@@ -368,16 +340,22 @@ fun TimerPresetsSection(
                                 Icon(
                                     Icons.Default.Label,
                                     contentDescription = null,
-                                    tint = if (preset.isSelected) FireOrange else TextSecondary,
+                                    tint = FireOrange,
                                     modifier = Modifier.size(14.dp),
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(preset.tag, color = White, fontSize = 14.sp)
+                                Text(
+                                    text = preset.tag,
+                                    color = White,
+                                    fontSize = 14.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
+                        
                         Surface(
-                            color = SurfaceHighlight.copy(alpha = if (preset.isSelected) 0.3f else 0.15f),
+                            color = SurfaceHighlight.copy(alpha = 0.15f),
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
@@ -390,13 +368,27 @@ fun TimerPresetsSection(
                                 Icon(
                                     Icons.Default.Timer,
                                     contentDescription = null,
-                                    tint = if (preset.isSelected) FireOrange else TextSecondary,
+                                    tint = FireOrange,
                                     modifier = Modifier.size(14.dp),
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(timeString, color = White, fontSize = 14.sp)
                             }
                         }
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    IconButton(
+                        onClick = { onDeleteClick(preset) },
+                        modifier = Modifier.size(24.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = Color.Red.copy(alpha = 0.6f),
+                            modifier = Modifier.size(20.dp),
+                        )
                     }
                 }
             }

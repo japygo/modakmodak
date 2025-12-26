@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -323,6 +324,8 @@ fun LogItemCard(log: StudyLog) {
                 text = title + if (!log.isSuccess) stringResource(R.string.stats_log_given_up_suffix) else "",
                 color = textColor,
                 fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(date.format(formatter), color = TextSecondary, fontSize = 12.sp)
         }
