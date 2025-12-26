@@ -3,6 +3,8 @@ package com.japygo.modakmodak.ui.settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -301,94 +304,105 @@ fun TimerPresetsSection(
             )
         }
 
-        presets.forEach { preset ->
-            val hours = preset.durationMinutes / 60
-            val minutes = preset.durationMinutes % 60
-            val timeString = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
-
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = SurfaceDark,
-                ),
+        if (presets.isNotEmpty()) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
+                    .heightIn(max = 320.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                presets.forEach { preset ->
+                    val hours = preset.durationMinutes / 60
+                    val minutes = preset.durationMinutes % 60
+                    val timeString = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = SurfaceDark,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
                     ) {
-                        Surface(
-                            color = SurfaceHighlight.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp),
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .clickable { onEditClick(preset) },
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Row(
-                                modifier = Modifier.padding(10.dp),
+                                modifier = Modifier.weight(1f),
                                 verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Surface(
+                                    color = SurfaceHighlight.copy(alpha = 0.15f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    border = BorderStroke(1.dp, SurfaceHighlight.copy(alpha = 0.3f)),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { onEditClick(preset) },
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Label,
+                                            contentDescription = null,
+                                            tint = FireOrange,
+                                            modifier = Modifier.size(14.dp),
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = preset.tag,
+                                            color = White,
+                                            fontSize = 14.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                                
+                                Surface(
+                                    color = SurfaceHighlight.copy(alpha = 0.15f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    border = BorderStroke(1.dp, SurfaceHighlight.copy(alpha = 0.3f)),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { onEditClick(preset) },
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Timer,
+                                            contentDescription = null,
+                                            tint = FireOrange,
+                                            modifier = Modifier.size(14.dp),
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(timeString, color = White, fontSize = 14.sp)
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            IconButton(
+                                onClick = { onDeleteClick(preset) },
+                                modifier = Modifier.size(24.dp),
                             ) {
                                 Icon(
-                                    Icons.Default.Label,
-                                    contentDescription = null,
-                                    tint = FireOrange,
-                                    modifier = Modifier.size(14.dp),
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = preset.tag,
-                                    color = White,
-                                    fontSize = 14.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.Red.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(20.dp),
                                 )
                             }
                         }
-                        
-                        Surface(
-                            color = SurfaceHighlight.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable { onEditClick(preset) },
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Icon(
-                                    Icons.Default.Timer,
-                                    contentDescription = null,
-                                    tint = FireOrange,
-                                    modifier = Modifier.size(14.dp),
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(timeString, color = White, fontSize = 14.sp)
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    IconButton(
-                        onClick = { onDeleteClick(preset) },
-                        modifier = Modifier.size(24.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = Color.Red.copy(alpha = 0.6f),
-                            modifier = Modifier.size(20.dp),
-                        )
                     }
                 }
             }

@@ -34,18 +34,28 @@ class HomeViewModel(
     private val _sessionDurationMinutes = MutableStateFlow(25)
     val sessionDurationMinutes = _sessionDurationMinutes.asStateFlow()
 
+    private val _selectedPreset = MutableStateFlow<TimerPreset?>(null)
+    val selectedPreset = _selectedPreset.asStateFlow()
+
     private var hasInitialized = false
 
     init {
         // 마지막으로 사용했던 설정을 불러와 세션 초기값으로 설정
         viewModelScope.launch {
-            _sessionTag.value = settingsRepository.defaultTag.first()
-            _sessionDurationMinutes.value = settingsRepository.defaultTimerMinutes.first()
+            val tag = settingsRepository.defaultTag.first()
+            val minutes = settingsRepository.defaultTimerMinutes.first()
+            _sessionTag.value = tag
+            _sessionDurationMinutes.value = minutes
+
+            // 현재 설정과 일치하는 프리셋이 있는지 확인하여 초기 선택 상태 설정
+            val presets = timerPresets.value
+            _selectedPreset.value = presets.find { it.tag == tag && it.durationMinutes == minutes }
         }
     }
 
     // 프리셋 선택 (이번 세션에만 적용 및 저장)
     fun selectPresetForSession(preset: TimerPreset) {
+        _selectedPreset.value = preset
         _sessionTag.value = preset.tag
         _sessionDurationMinutes.value = preset.durationMinutes
         saveLastUsed(preset.tag, preset.durationMinutes)
@@ -53,6 +63,7 @@ class HomeViewModel(
 
     // 커스텀 수정 (이번 세션에만 적용 및 저장)
     fun updateSessionSettings(tag: String, minutes: Int) {
+        _selectedPreset.value = null // 커스텀 수정 시 프리셋 선택 해제
         _sessionTag.value = tag
         _sessionDurationMinutes.value = minutes
         saveLastUsed(tag, minutes)

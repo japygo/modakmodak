@@ -4,6 +4,8 @@ import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,6 +26,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -31,6 +35,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -199,8 +204,10 @@ fun HomeScreen(
     }
 
     if (showPresetSelector) {
+        val selectedPreset by viewModel.selectedPreset.collectAsState()
         PresetSelectionDialog(
             presets = timerPresets,
+            selectedPreset = selectedPreset,
             currentTag = sessionTag,
             currentMinutes = sessionDuration,
             onDismiss = { showPresetSelector = false },
@@ -217,6 +224,7 @@ fun HomeScreen(
 @Composable
 fun PresetSelectionDialog(
     presets: List<com.japygo.modakmodak.data.entity.TimerPreset>,
+    selectedPreset: com.japygo.modakmodak.data.entity.TimerPreset?,
     currentTag: String,
     currentMinutes: Int,
     onDismiss: () -> Unit,
@@ -238,8 +246,23 @@ fun PresetSelectionDialog(
                     color = White,
                     fontWeight = FontWeight.Bold,
                 )
-                TextButton(onClick = { showCustomEdit = true }) {
-                    Text(stringResource(R.string.home_preset_dialog_custom), color = FireOrange)
+                val isCustomSelected = selectedPreset == null
+                Surface(
+                    onClick = { showCustomEdit = true },
+                    color = if (isCustomSelected) FireOrange.copy(alpha = 0.15f) else Color.Transparent,
+                    shape = RoundedCornerShape(8.dp),
+                    border = if (isCustomSelected) BorderStroke(1.dp, FireOrange) else BorderStroke(
+                        1.dp,
+                        SurfaceHighlight.copy(alpha = 0.4f)
+                    ),
+                ) {
+                    Text(
+                        text = stringResource(R.string.home_preset_dialog_custom),
+                        color = if (isCustomSelected) FireOrange else TextSecondary,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        fontSize = 14.sp,
+                        fontWeight = if (isCustomSelected) FontWeight.Bold else FontWeight.Normal
+                    )
                 }
             }
         },
@@ -259,32 +282,52 @@ fun PresetSelectionDialog(
                         fontSize = 14.sp,
                     )
                 } else {
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 240.dp)
+                            .verticalScroll(rememberScrollState())
                     ) {
-                        presets.forEach { preset ->
-                            val isSelected =
-                                preset.tag == currentTag && preset.durationMinutes == currentMinutes
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { onPresetSelect(preset) },
-                                label = {
-                                    Text(
-                                        text = "${preset.tag} (${preset.durationMinutes}m)",
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = FireOrange.copy(alpha = 0.2f),
-                                    selectedLabelColor = FireOrange,
-                                    containerColor = SurfaceHighlight.copy(alpha = 0.1f),
-                                    labelColor = White,
-                                ),
-                                border = if (isSelected) BorderStroke(1.dp, FireOrange) else null,
-                            )
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            presets.forEach { preset ->
+                                val isSelected = selectedPreset?.id == preset.id
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { onPresetSelect(preset) },
+                                    label = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Text(
+                                                text = preset.tag,
+                                                modifier = Modifier.weight(1f, fill = false),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                            Text(
+                                                text = "(${preset.durationMinutes}m)",
+                                                color = if (isSelected) FireOrange else TextSecondary,
+                                                fontSize = 12.sp
+                                            )
+                                        }
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = FireOrange.copy(alpha = 0.2f),
+                                        selectedLabelColor = FireOrange,
+                                        containerColor = SurfaceHighlight.copy(alpha = 0.1f),
+                                        labelColor = White,
+                                    ),
+                                    border = if (isSelected) BorderStroke(1.dp, FireOrange) else BorderStroke(
+                                        1.dp,
+                                        SurfaceHighlight.copy(alpha = 0.4f)
+                                    ),
+                                )
+                            }
                         }
                     }
                 }
