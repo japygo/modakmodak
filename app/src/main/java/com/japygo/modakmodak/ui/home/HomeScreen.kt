@@ -2,7 +2,6 @@ package com.japygo.modakmodak.ui.home
 
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.ui.components.ModakBottomBar
+import com.japygo.modakmodak.ui.components.ModakCharacter
 import com.japygo.modakmodak.ui.theme.BackgroundDark
 import com.japygo.modakmodak.ui.theme.FireOrange
 import com.japygo.modakmodak.ui.theme.Orange
@@ -74,6 +73,11 @@ fun HomeScreen(
     val sessionDuration by viewModel.sessionDurationMinutes.collectAsState()
 
     var showPresetSelector by remember { mutableStateOf(false) }
+
+    // Get fire color based on level
+    val fireColor = remember(user?.fireLevel) {
+        getFireColorByLevel(user?.fireLevel ?: 1)
+    }
 
     Scaffold(
         modifier = Modifier
@@ -96,7 +100,7 @@ fun HomeScreen(
                     .size(250.dp)
                     .background(
                         brush = Brush.radialGradient(
-                            colors = listOf(FireOrange.copy(alpha = 0.6f), Color.Transparent),
+                            colors = listOf(fireColor.copy(alpha = 0.6f), Color.Transparent),
                         ),
                         shape = CircleShape,
                     ),
@@ -104,7 +108,7 @@ fun HomeScreen(
             ) {
                 // Tag above fire
                 Surface(
-                    color = FireOrange.copy(alpha = 0.2f),
+                    color = fireColor.copy(alpha = 0.2f),
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
                         .align(Alignment.TopCenter)
@@ -117,7 +121,7 @@ fun HomeScreen(
                         Icon(
                             Icons.Rounded.Label,
                             contentDescription = null,
-                            tint = FireOrange,
+                            tint = fireColor,
                             modifier = Modifier.size(14.dp),
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -130,13 +134,13 @@ fun HomeScreen(
                     }
                 }
 
-                // Inner core - Modak Character
-                Image(
-                    painter = painterResource(id = R.drawable.default_modak),
-                    contentDescription = "Modak Character",
+                // Inner core - Modak Character with Fire Animation
+                // Apply flame color based on user level
+                ModakCharacter(
+                    flameColor = fireColor,
                     modifier = Modifier
                         .size(160.dp)
-                        .padding(bottom = 20.dp), // Slight adjustment to center visually within the glow
+                        .padding(bottom = 20.dp),
                 )
             }
 
@@ -345,3 +349,22 @@ fun HomeTopBar(navController: NavController, coins: Int) {
 }
 
 // HomeBottomBar component has been moved to ModakBottomBar.kt
+
+/**
+ * Returns the fire color based on the user's level
+ * Level progression:
+ * 1-5: Orange (beginner)
+ * 6-10: Red-Orange (intermediate)
+ * 11-15: Red (advanced)
+ * 16-20: Purple-Red (expert)
+ * 21+: Blue-Purple (master)
+ */
+private fun getFireColorByLevel(level: Int): Color {
+    return when (level) {
+        in 1..5 -> Color(0xFFFF9500) // Orange
+        in 6..10 -> Color(0xFFFF6B35) // Red-Orange
+        in 11..15 -> Color(0xFFFF3B30) // Red
+        in 16..20 -> Color(0xFFFF2D92) // Purple-Red
+        else -> Color(0xFFBF5AF2) // Blue-Purple (21+)
+    }
+}
