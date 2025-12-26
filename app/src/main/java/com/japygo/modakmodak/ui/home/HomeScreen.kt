@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Label
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -32,7 +31,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -79,6 +77,11 @@ fun HomeScreen(
         getFireColorByLevel(user?.fireLevel ?: 1)
     }
 
+    // TODO: Replace with actual logic based on logs added
+    val characterScale = 1.0f
+    // Background minimum size is 250.dp (at scale 1.0f), scales up when character grows
+    val backgroundSize = (250.dp * characterScale.coerceAtLeast(1.0f)).coerceAtMost(500.dp)
+
     Scaffold(
         modifier = Modifier
             .statusBarsPadding()
@@ -92,110 +95,100 @@ fun HomeScreen(
                 .padding(innerPadding)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
         ) {
-            // Fire Animation Placeholder
+            // Top 2/3 section for character and background
             Box(
                 modifier = Modifier
-                    .size(250.dp)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(fireColor.copy(alpha = 0.6f), Color.Transparent),
-                        ),
-                        shape = CircleShape,
-                    ),
+                    .weight(2f)
+                    .fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
-                // Tag above fire
-                Surface(
-                    color = fireColor.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(16.dp),
+                // Background size scales with character
+                Box(
                     modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 20.dp),
+                        .size(backgroundSize)
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(fireColor.copy(alpha = 0.6f), Color.Transparent),
+                            ),
+                            shape = CircleShape,
+                        ),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            Icons.Rounded.Label,
-                            contentDescription = null,
-                            tint = fireColor,
-                            modifier = Modifier.size(14.dp),
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            sessionTag,
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
+                    // Modak Character with Fire Animation
+                    // Apply flame color based on user level
+                    // Scale entire character proportionally
+                    // clipToBounds = false allows animation to overflow when scaled without clipping
+                    ModakCharacter(
+                        flameColor = fireColor,
+                        scale = characterScale,
+                        clipToBounds = false,
+                        modifier = Modifier
+                            .size(200.dp)
+                            .padding(bottom = 20.dp),
+                    )
                 }
-
-                // Inner core - Modak Character with Fire Animation
-                // Apply flame color based on user level
-                ModakCharacter(
-                    flameColor = fireColor,
-                    modifier = Modifier
-                        .size(160.dp)
-                        .padding(bottom = 20.dp),
-                )
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
-
-            // Timer
-            val hours = sessionDuration / 60
-            val minutes = sessionDuration % 60
-            val timeText = if (hours > 0) String.format(
-                "%02d:%02d:00",
-                hours,
-                minutes,
-            ) else String.format("%02d:00", minutes)
-
-            Text(
-                text = timeText,
-                color = Color.White,
-                fontSize = 54.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { showPresetSelector = true },
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = stringResource(R.string.home_timer_adjust_hint),
-                color = Color.Gray,
-                fontSize = 14.sp,
-            )
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            // Start Button
-            Button(
-                onClick = {
-                    val encodedTag = Uri.encode(sessionTag)
-                    navController.navigate("focus/$sessionDuration/$encodedTag")
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                contentPadding = PaddingValues(0.dp),
+            // Bottom 1/3 section for timer and button (fixed position)
+            Column(
                 modifier = Modifier
-                    .height(56.dp)
-                    .width(200.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(Orange, FireOrange),
-                        ),
-                    ),
+                    .weight(1f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
+                // Timer
+                val hours = sessionDuration / 60
+                val minutes = sessionDuration % 60
+                val timeText = if (hours > 0) String.format(
+                    "%02d:%02d:00",
+                    hours,
+                    minutes,
+                ) else String.format("%02d:00", minutes)
+
                 Text(
-                    text = stringResource(R.string.home_start_button),
+                    text = timeText,
                     color = Color.White,
-                    fontSize = 18.sp,
+                    fontSize = 54.sp,
                     fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { showPresetSelector = true },
                 )
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = stringResource(R.string.home_timer_adjust_hint),
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                )
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                // Start Button with tag inside
+                Button(
+                    onClick = {
+                        val encodedTag = Uri.encode(sessionTag)
+                        navController.navigate("focus/$sessionDuration/$encodedTag")
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Orange, FireOrange),
+                            ),
+                        ),
+                ) {
+                    Text(
+                        text = stringResource(R.string.home_start_button, sessionTag),
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                    )
+                }
             }
         }
     }

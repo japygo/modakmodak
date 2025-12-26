@@ -17,7 +17,7 @@
 
     <!-- Home Screen -->
     <string name="home_timer_adjust_hint">Touch to adjust time</string>
-    <string name="home_start_button">Start ModakModak</string>
+    <string name="home_start_button">Start %1$s</string>
     <string name="home_preset_dialog_title">Select Timer</string>
     <string name="home_preset_dialog_custom">Manual Input</string>
     <string name="home_preset_dialog_subtitle">Saved Presets</string>

@@ -3,6 +3,7 @@ package com.japygo.modakmodak.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.airbnb.lottie.LottieProperty
@@ -12,6 +13,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
+import com.airbnb.lottie.value.ScaleXY
 import com.japygo.modakmodak.R
 
 /**
@@ -21,6 +23,8 @@ import com.japygo.modakmodak.R
  * @param flameColor Color for the outer flames (default: original color from Lottie file)
  * @param faceColor Color for the face/body (inner_flame layers) (default: original color)
  * @param eyeColor Color for the eyes (default: original color)
+ * @param scale Scale factor for the entire character size (default: 1.0f = original size)
+ * @param clipToBounds Whether to clip the animation to its bounds (default: false for larger flames)
  */
 @Composable
 fun ModakCharacter(
@@ -28,6 +32,8 @@ fun ModakCharacter(
     flameColor: Color? = null,
     faceColor: Color? = null,
     eyeColor: Color? = null,
+    scale: Float = 1.0f,
+    clipToBounds: Boolean = false,
 ) {
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(R.raw.default_modak),
@@ -126,6 +132,19 @@ fun ModakCharacter(
                 )
             )
         }
+
+        // Character scale (only if not default)
+        // Scale the entire body composition which includes flames, face, and all elements
+        if (scale != 1.0f) {
+            val scaleXY = ScaleXY(scale, scale)
+            add(
+                rememberLottieDynamicProperty(
+                    property = LottieProperty.TRANSFORM_SCALE,
+                    value = scaleXY,
+                    keyPath = arrayOf("body")
+                )
+            )
+        }
     }
 
     val dynamicProperties = if (dynamicPropertiesList.isNotEmpty()) {
@@ -134,10 +153,17 @@ fun ModakCharacter(
         null
     }
 
+    val finalModifier = if (clipToBounds) {
+        modifier.clipToBounds()
+    } else {
+        modifier
+    }
+
     LottieAnimation(
         composition = composition,
         iterations = LottieConstants.IterateForever,
         dynamicProperties = dynamicProperties,
-        modifier = modifier,
+        clipToCompositionBounds = false,
+        modifier = finalModifier,
     )
 }
