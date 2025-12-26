@@ -41,7 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -230,7 +229,6 @@ fun InventoryItemCard(
     shopItem: ShopItem,
     onUseClick: (Inventory) -> Unit,
 ) {
-    val isAvailable = inventory.quantity > 0
 
     Column(
         modifier = Modifier
@@ -238,10 +236,10 @@ fun InventoryItemCard(
             .background(SurfaceDark)
             .border(
                 1.dp,
-                if (isAvailable) FireOrange.copy(alpha = 0.3f) else White.copy(alpha = 0.05f),
+                FireOrange.copy(alpha = 0.3f),
                 RoundedCornerShape(24.dp),
             )
-            .clickable(enabled = isAvailable) { onUseClick(inventory) }
+            .clickable { onUseClick(inventory) }
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -250,8 +248,7 @@ fun InventoryItemCard(
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(18.dp))
-                .background(Color(0xFF1A160D))
-                .graphicsLayer(alpha = if (isAvailable) 1f else 0.4f),
+                .background(Color(0xFF1A160D)),
             contentAlignment = Alignment.Center,
         ) {
             val resId = when (shopItem.imageUrl) {
@@ -302,15 +299,15 @@ fun InventoryItemCard(
         }
         Text(
             nameResId?.let { stringResource(it) } ?: shopItem.name,
-            color = if (isAvailable) White else TextSecondary,
+            color = White,
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
         )
 
         Text(
-            if (isAvailable) stringResource(R.string.shop_inventory_use_hint) else stringResource(R.string.shop_inventory_depleted),
-            color = if (isAvailable) FireOrange.copy(alpha = 0.8f) else TextSecondary,
+            stringResource(R.string.shop_inventory_use_hint),
+            color = FireOrange.copy(alpha = 0.8f),
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
         )
