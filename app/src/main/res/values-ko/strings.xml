@@ -44,6 +44,8 @@
     <string name="stats_date_format">yyyy년 M월</string>
     <string name="stats_log_default_title">집중 세션</string>
     <string name="stats_log_given_up_suffix"> (중단함)</string>
+    <string name="stats_log_empty">최근 학습 기록이 없습니다.</string>
+    <string name="filter_all">전체</string>
 
     <!-- Weekdays -->
     <string name="day_mon">월</string>

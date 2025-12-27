@@ -81,16 +81,32 @@ fun StatsScreen(
         },
         bottomBar = { ModakBottomBar(navController, "stats") },
     ) { innerPadding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            item {
-                SummaryCard(totalTime = totalTime, successRate = successRate)
-            }
+            val availableTags by viewModel.availableTags.collectAsState()
+            val selectedTags by viewModel.selectedTags.collectAsState()
+            
+            TagFilterRow(
+                availableTags = availableTags,
+                selectedTags = selectedTags,
+                onTagToggle = { viewModel.toggleTag(it) },
+                onClearTags = { viewModel.clearTags() }
+            )
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                // item { TagFilterRow... } removed from here
+
+                item {
+                    SummaryCard(totalTime = totalTime, successRate = successRate)
+                }
 
             item {
                 Text(
@@ -117,13 +133,31 @@ fun StatsScreen(
                 )
             }
 
-            items(currentMonthLogs) { log ->
-                LogItemCard(log)
+            if (currentMonthLogs.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.stats_log_empty),
+                            color = TextSecondary,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            } else {
+                items(currentMonthLogs) { log ->
+                    LogItemCard(log)
+                }
             }
 
             item { Spacer(Modifier.height(50.dp)) }
         }
     }
+}
 }
 
 @Composable
@@ -321,7 +355,7 @@ fun LogItemCard(log: StudyLog) {
             val title = log.tag.takeIf { !it.isNullOrBlank() }
                 ?: stringResource(R.string.stats_log_default_title)
             Text(
-                text = title + if (!log.isSuccess) stringResource(R.string.stats_log_given_up_suffix) else "",
+                text = title,
                 color = textColor,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -342,6 +376,68 @@ fun LogItemCard(log: StudyLog) {
                 contentDescription = null,
                 tint = FireOrange,
                 modifier = Modifier.size(14.dp),
+            )
+        }
+    }
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun TagFilterRow(
+    availableTags: List<String>,
+    selectedTags: Set<String>,
+    onTagToggle: (String) -> Unit,
+    onClearTags: () -> Unit
+) {
+    androidx.compose.foundation.lazy.LazyRow(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        item {
+            val isAllSelected = selectedTags.isEmpty()
+            androidx.compose.material3.FilterChip(
+                selected = isAllSelected,
+                onClick = onClearTags,
+                label = { Text(stringResource(R.string.filter_all)) },
+                colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = FireOrange,
+                    selectedLabelColor = White,
+                    containerColor = SurfaceDark,
+                    labelColor = TextSecondary
+                ),
+                border = androidx.compose.material3.FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = isAllSelected,
+                    borderColor = Color.Transparent,
+                    selectedBorderColor = Color.Transparent,
+                    borderWidth = 0.dp
+                ),
+                shape = RoundedCornerShape(20.dp)
+            )
+        }
+
+        items(availableTags) { tag ->
+            val isSelected = selectedTags.contains(tag)
+            androidx.compose.material3.FilterChip(
+                selected = isSelected,
+                onClick = { onTagToggle(tag) },
+                label = { Text(tag) },
+                colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = FireOrange,
+                    selectedLabelColor = White,
+                    containerColor = SurfaceDark,
+                    labelColor = TextSecondary
+                ),
+                border = androidx.compose.material3.FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = isSelected,
+                    borderColor = Color.Transparent,
+                    selectedBorderColor = Color.Transparent,
+                    borderWidth = 0.dp
+                ),
+                shape = RoundedCornerShape(20.dp)
             )
         }
     }

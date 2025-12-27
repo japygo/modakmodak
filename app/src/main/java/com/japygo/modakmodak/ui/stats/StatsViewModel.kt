@@ -45,7 +45,7 @@ class StatsViewModel(
     fun loadLogs() {
         val start = YearMonth.now().minusMonths(11).atDay(1).atStartOfDay(ZoneId.systemDefault())
             .toInstant().toEpochMilli()
-        val end = System.currentTimeMillis()
+        val end = Long.MAX_VALUE
 
         viewModelScope.launch {
             repository.getLogsForRange(start, end).collect {
@@ -54,7 +54,25 @@ class StatsViewModel(
         }
     }
 
-    val heatmapData: StateFlow<Map<LocalDate, DailyStats>> = _logs.map { logs ->
+    private val _selectedTags = MutableStateFlow<Set<String>>(emptySet())
+    val selectedTags: StateFlow<Set<String>> = _selectedTags.asStateFlow()
+
+    // Combined tags from Presets and Logs
+    val availableTags: StateFlow<List<String>> = combine(repository.timerPresetsFlow, _logs) { presets, logs ->
+        val presetTags = presets.map { it.tag }
+        val logTags = logs.mapNotNull { it.tag }.filter { it.isNotBlank() }
+        (presetTags + logTags).distinct().sorted()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val filteredLogs = combine(_logs, _selectedTags) { logs, selected ->
+        if (selected.isEmpty()) {
+            logs
+        } else {
+            logs.filter { it.tag in selected }
+        }
+    }
+
+    val heatmapData: StateFlow<Map<LocalDate, DailyStats>> = filteredLogs.map { logs ->
         logs.groupBy {
             Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
         }.mapValues { entry ->
@@ -67,7 +85,7 @@ class StatsViewModel(
     private val _selectedDate = MutableStateFlow<LocalDate?>(null)
     val selectedDate: StateFlow<LocalDate?> = _selectedDate.asStateFlow()
 
-    val currentMonthStats = combine(_logs, _currentMonth, _selectedDate) { logs, month, selected ->
+    val currentMonthStats = combine(filteredLogs, _currentMonth, _selectedDate) { logs, month, selected ->
         logs.filter {
             val date = Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
             // If date selected, filter by date. Else filter by month.
@@ -85,6 +103,20 @@ class StatsViewModel(
         } else {
             _selectedDate.value = date
         }
+    }
+
+    fun toggleTag(tag: String) {
+        val current = _selectedTags.value
+        if (current.contains(tag)) {
+            _selectedTags.value = current - tag
+        } else {
+            _selectedTags.value = current + tag
+        }
+        // Deselect date when changing filters to avoid confusion? kept disjoint for now as per req
+    }
+
+    fun clearTags() {
+        _selectedTags.value = emptySet()
     }
 
     val totalTimeThisMonth = currentMonthStats.map { logs ->

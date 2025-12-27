@@ -44,6 +44,8 @@
     <string name="stats_date_format">MMMM yyyy</string>
     <string name="stats_log_default_title">Focus Session</string>
     <string name="stats_log_given_up_suffix"> (Given Up)</string>
+    <string name="stats_log_empty">No recent study logs.</string>
+    <string name="filter_all">All</string>
 
     <!-- Weekdays -->
     <string name="day_mon">M</string>
