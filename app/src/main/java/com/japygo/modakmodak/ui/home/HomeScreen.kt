@@ -232,11 +232,15 @@ fun HomeScreen(
 
     if (showPresetSelector) {
         val selectedPreset by viewModel.selectedPreset.collectAsState()
+        // 커스텀 다이얼로그 초기값은 마지막 커스텀 설정값을 사용
+        val lastCustomTag by viewModel.lastCustomTag.collectAsState()
+        val lastCustomMinutes by viewModel.lastCustomDurationMinutes.collectAsState()
+        
         PresetSelectionDialog(
             presets = timerPresets,
             selectedPreset = selectedPreset,
-            currentTag = sessionTag,
-            currentMinutes = sessionDuration,
+            currentTag = lastCustomTag, // 현재 세션값이 아닌, 마지막 커스텀 값을 전달
+            currentMinutes = lastCustomMinutes, // 현재 세션값이 아닌, 마지막 커스텀 값을 전달
             onDismiss = { showPresetSelector = false },
             onPresetSelect = { viewModel.selectPresetForSession(it) },
             onCustomConfirm = { tag, minutes ->

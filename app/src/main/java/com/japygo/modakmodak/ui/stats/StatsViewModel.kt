@@ -57,11 +57,16 @@ class StatsViewModel(
     private val _selectedTags = MutableStateFlow<Set<String>>(emptySet())
     val selectedTags: StateFlow<Set<String>> = _selectedTags.asStateFlow()
 
-    // Combined tags from Presets and Logs
-    val availableTags: StateFlow<List<String>> = combine(repository.timerPresetsFlow, _logs) { presets, logs ->
-        val presetTags = presets.map { it.tag }
-        val logTags = logs.mapNotNull { it.tag }.filter { it.isNotBlank() }
-        (presetTags + logTags).distinct().sorted()
+    // Filtered tags from Logs only for current month
+    val availableTags: StateFlow<List<String>> = combine(_logs, _currentMonth) { logs, month ->
+        logs.filter {
+            val date = Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
+            YearMonth.from(date) == month
+        }
+        .sortedBy { it.date } // Sort by date ascending to show in order of appearance
+        .mapNotNull { it.tag }
+        .filter { it.isNotBlank() }
+        .distinct() // Keep unique tags (preserves order)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val filteredLogs = combine(_logs, _selectedTags) { logs, selected ->

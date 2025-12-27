@@ -37,6 +37,15 @@ class HomeViewModel(
     private val _selectedPreset = MutableStateFlow<TimerPreset?>(null)
     val selectedPreset = _selectedPreset.asStateFlow()
 
+    // 커스텀 설정 마지막 값 (세션 설정과 별도로 저장)
+    private val _lastCustomTag = MutableStateFlow(
+        if (java.util.Locale.getDefault().language == "ko") "#공부" else "#study"
+    )
+    val lastCustomTag = _lastCustomTag.asStateFlow()
+
+    private val _lastCustomDurationMinutes = MutableStateFlow(25)
+    val lastCustomDurationMinutes = _lastCustomDurationMinutes.asStateFlow()
+
     private var hasInitialized = false
 
     init {
@@ -46,10 +55,34 @@ class HomeViewModel(
             val minutes = settingsRepository.defaultTimerMinutes.first()
             _sessionTag.value = tag
             _sessionDurationMinutes.value = minutes
+            
+            // 커스텀 설정 초기값도 동일하게 설정
+            _lastCustomTag.value = tag
+            _lastCustomDurationMinutes.value = minutes
 
             // 현재 설정과 일치하는 프리셋이 있는지 확인하여 초기 선택 상태 설정
+            // Note: This relies on the initial value of timerPresets
             val presets = timerPresets.value
             _selectedPreset.value = presets.find { it.tag == tag && it.durationMinutes == minutes }
+        }
+
+        // 프리셋 변경 감지 (설정 화면 등에서 수정했을 때 홈 화면 반영)
+        viewModelScope.launch {
+            timerPresets.collect { presets ->
+                val currentSelected = _selectedPreset.value
+                if (currentSelected != null) {
+                    val updatedPreset = presets.find { it.id == currentSelected.id }
+                    if (updatedPreset != null) {
+                        // 선택된 프리셋의 내용이 변경되었다면 업데이트
+                        if (updatedPreset != currentSelected) {
+                            selectPresetForSession(updatedPreset)
+                        }
+                    } else {
+                        // 선택된 프리셋이 삭제되었다면 선택 해제 (현재 tag/min 값은 유지)
+                        _selectedPreset.value = null
+                    }
+                }
+            }
         }
     }
 
@@ -61,11 +94,16 @@ class HomeViewModel(
         saveLastUsed(preset.tag, preset.durationMinutes)
     }
 
-    // 커스텀 수정 (이번 세션에만 적용 및 저장)
+    // 커스텀 수정 (이번 세션에만 적용 및 저장, 커스텀 기록 업데이트)
     fun updateSessionSettings(tag: String, minutes: Int) {
         _selectedPreset.value = null // 커스텀 수정 시 프리셋 선택 해제
         _sessionTag.value = tag
         _sessionDurationMinutes.value = minutes
+        
+        // 커스텀 설정 기록 업데이트
+        _lastCustomTag.value = tag
+        _lastCustomDurationMinutes.value = minutes
+        
         saveLastUsed(tag, minutes)
     }
 
