@@ -247,14 +247,14 @@ fun HomeScreen(
                         color = Color.White,
                         fontSize = 54.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable { showPresetSelector = true },
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = stringResource(R.string.home_timer_adjust_hint),
-                        color = Color.White.copy(alpha = 0.8f),
+                        color = FireOrange,
                         fontSize = 14.sp,
+                        modifier = Modifier.clickable { showPresetSelector = true },
                     )
 
                     Spacer(modifier = Modifier.height(60.dp))
