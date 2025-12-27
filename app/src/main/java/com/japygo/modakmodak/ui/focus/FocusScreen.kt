@@ -1,7 +1,12 @@
 package com.japygo.modakmodak.ui.focus
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.net.Uri
+import android.view.WindowManager
 import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -64,6 +69,7 @@ import com.japygo.modakmodak.ui.theme.BackgroundDark
 // Alias Primary to FireOrange for consistency with plan if needed, 
 // or simpler: use FireOrange directly.
 // The Plan said BackgroundDark (#231C0F).
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun FocusScreen(
@@ -75,6 +81,11 @@ fun FocusScreen(
     val sessionState by viewModel.sessionState.collectAsState()
     val isBreakEnabled by viewModel.isBreakEnabled.collectAsState()
     val initialDuration by viewModel.initialDuration.collectAsState()
+    val isScreenOnEnabled by viewModel.isScreenOnEnabled.collectAsState()
+
+    if (isScreenOnEnabled && isFocusing) {
+        KeepScreenOn()
+    }
 
     // Status bar and Navigation bar color adjustment handled by Theme (Transparent)
 
@@ -320,4 +331,25 @@ fun formatTime(seconds: Int): String {
     } else {
         "%02d:%02d".format(m, s)
     }
+}
+
+@Composable
+fun KeepScreenOn() {
+    val context = LocalContext.current
+    DisposableEffect(Unit) {
+        val activity = context.findActivity()
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        onDispose {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+}
+
+fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }

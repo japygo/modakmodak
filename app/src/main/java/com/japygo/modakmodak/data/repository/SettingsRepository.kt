@@ -35,7 +35,7 @@ class SettingsRepository(private val context: Context) {
     val bgmVolume: Flow<Float> = dataStore.data.map { it[BGM_VOLUME] ?: 0.5f }
     val sfxVolume: Flow<Float> = dataStore.data.map { it[SFX_VOLUME] ?: 0.5f }
     val isVibrationEnabled: Flow<Boolean> = dataStore.data.map { it[IS_VIBRATION_ENABLED] ?: true }
-    val isScreenOnEnabled: Flow<Boolean> = dataStore.data.map { it[IS_SCREEN_ON_ENABLED] ?: false }
+    val isScreenOnEnabled: Flow<Boolean> = dataStore.data.map { it[IS_SCREEN_ON_ENABLED] ?: true }
     val defaultTimerMinutes: Flow<Int> = dataStore.data.map { it[DEFAULT_TIMER_MINUTES] ?: 25 }
     val defaultTag: Flow<String> = dataStore.data.map {
         it[DEFAULT_TAG] ?: if (Locale.getDefault().language == "ko") "#공부" else "#study"

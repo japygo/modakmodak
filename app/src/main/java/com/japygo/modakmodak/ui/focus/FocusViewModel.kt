@@ -27,6 +27,9 @@ class FocusViewModel(
     val isNotificationEnabled: StateFlow<Boolean> = settingsRepository.isNotificationEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val isScreenOnEnabled: StateFlow<Boolean> = settingsRepository.isScreenOnEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     val user = repository.userFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 

@@ -31,6 +31,9 @@ class BreakViewModel(
     val isNotificationEnabled: StateFlow<Boolean> = settingsRepository.isNotificationEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val isScreenOnEnabled: StateFlow<Boolean> = settingsRepository.isScreenOnEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     private val _randomMessage = MutableStateFlow(R.string.break_msg_level1_1)
     val randomMessage: StateFlow<Int> = _randomMessage.asStateFlow()
 

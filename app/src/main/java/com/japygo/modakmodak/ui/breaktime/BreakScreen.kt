@@ -1,5 +1,10 @@
 package com.japygo.modakmodak.ui.breaktime
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.view.WindowManager
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,6 +43,7 @@ import com.japygo.modakmodak.ui.theme.BackgroundDark
 import com.japygo.modakmodak.ui.theme.FireOrange
 import com.japygo.modakmodak.ui.theme.Orange
 import com.japygo.modakmodak.ui.theme.White
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun BreakScreen(
@@ -48,6 +54,11 @@ fun BreakScreen(
     val isFinished by viewModel.isFinished.collectAsState()
     val randomMessage by viewModel.randomMessage.collectAsState()
     val isBreakTimerEnabled by viewModel.isBreakTimerEnabled.collectAsState()
+    val isScreenOnEnabled by viewModel.isScreenOnEnabled.collectAsState()
+
+    if (isScreenOnEnabled) {
+        KeepScreenOn()
+    }
 
     // Start timer on entry
     LaunchedEffect(Unit) {
@@ -154,4 +165,25 @@ fun BreakScreen(
             }
         }
     }
+}
+
+@Composable
+private fun KeepScreenOn() {
+    val context = LocalContext.current
+    DisposableEffect(Unit) {
+        val activity = context.findActivity()
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        onDispose {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+}
+
+private fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }
