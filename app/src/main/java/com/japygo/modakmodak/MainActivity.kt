@@ -59,7 +59,10 @@ class MainActivity : AppCompatActivity() {
                 .collect { language ->
                     val currentLang = resources.configuration.locales[0].language
                     if (currentLang != language) {
-                        recreate()
+                        val intent = packageManager.getLaunchIntentForPackage(packageName)
+                        intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        startActivity(intent)
+                        finish()
                     }
                 }
         }
@@ -72,11 +75,11 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     containerColor = BackgroundDark,
                 ) { innerPadding ->
-                    // Avoiding unused innerPadding warning or using it if needed, 
+                    // Avoiding unused innerPadding warning or using it if needed,
                     // but ModakNavGraph manages its own screens which have Scaffolds.
                     // We can pass it or just ignore it for the root host if we want full screen.
                     // Usually EdgeToEdge requires handling padding, but for now let's just host the graph.
-                    // Adjusting to not apply padding to graph directly if child screens handle it, 
+                    // Adjusting to not apply padding to graph directly if child screens handle it,
                     // but `enableEdgeToEdge` usually means we need to handle system bars.
                     // Our HomeScreen has a Scaffold, so it should handle padding.
                     // Let's passed modifier with padding to be safe or handle in graph.
