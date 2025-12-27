@@ -76,4 +76,25 @@ class HomeViewModel(
         }
     }
 
+    // DEBUG: Direct control for testing
+    fun debugAddExp(amount: Int) {
+        viewModelScope.launch {
+            repository.addExp(amount)
+        }
+    }
+
+    fun debugSetExp(exactExp: Int) {
+        viewModelScope.launch {
+            val currentUser = user.value ?: User()
+            val newLevel = when {
+                exactExp < 300 -> 1
+                exactExp < 1000 -> 2
+                exactExp < 3000 -> 3
+                exactExp < 8000 -> 4
+                else -> 5
+            }
+            repository.addExp(exactExp - currentUser.fireExp)
+        }
+    }
+
 }

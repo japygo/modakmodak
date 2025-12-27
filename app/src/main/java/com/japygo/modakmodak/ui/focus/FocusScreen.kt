@@ -55,6 +55,7 @@ import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.ui.components.ModakCharacter
+import com.japygo.modakmodak.ui.components.ModakGlowCharacter
 import com.japygo.modakmodak.ui.theme.DeepNavy
 import com.japygo.modakmodak.ui.theme.FireOrange
 import com.japygo.modakmodak.ui.theme.SurfaceHighlight
@@ -185,37 +186,13 @@ fun FocusScreen(
                         FireOrange
                     }
                 }
-                val characterScale = if (isFocusing) 1.05f else 1.0f
-                val glowSize = 500.dp * characterScale
 
-                Box(
-                    modifier = Modifier.size(glowSize),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        fireColor.copy(alpha = 0.5f),
-                                        fireColor.copy(alpha = 0.2f),
-                                        fireColor.copy(alpha = 0.05f),
-                                        Color.Transparent
-                                    ),
-                                ),
-                            ),
-                    )
-
-                    ModakCharacter(
-                        flameColor = fireColor,
-                        scale = characterScale,
-                        clipToBounds = false,
-                        modifier = Modifier
-                            .size(240.dp)
-                            .padding(bottom = 20.dp),
-                    )
-                }
+                ModakGlowCharacter(
+                    level = user?.fireLevel ?: 1,
+                    exp = user?.fireExp ?: 0,
+                    fireColor = fireColor,
+                    extraScale = if (isFocusing) 1.05f else 1.0f
+                )
             }
 
             // Bottom section for information and button (1.2f)

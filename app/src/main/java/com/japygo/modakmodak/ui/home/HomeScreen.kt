@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -58,6 +60,7 @@ import androidx.navigation.NavController
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.ui.components.ModakBottomBar
 import com.japygo.modakmodak.ui.components.ModakCharacter
+import com.japygo.modakmodak.ui.components.ModakGlowCharacter
 import com.japygo.modakmodak.ui.components.ModakCoinBadge
 import com.japygo.modakmodak.ui.components.ModakTopBar
 import com.japygo.modakmodak.ui.theme.BackgroundDark
@@ -90,10 +93,7 @@ fun HomeScreen(
         }
     }
 
-    // TODO: Replace with actual logic based on logs added
-    val characterScale = 1.0f
-    // Background minimum size is 250.dp (at scale 1.0f), scales up when character grows
-    val backgroundSize = (250.dp * characterScale.coerceAtLeast(1.0f)).coerceAtMost(500.dp)
+    val currentLevel = user?.fireLevel ?: 1
 
     Scaffold(
         modifier = Modifier
@@ -103,7 +103,7 @@ fun HomeScreen(
         topBar = { 
             ModakTopBar(
                 coins = user?.currentCoin ?: 0,
-                level = user?.fireLevel ?: 1,
+                level = currentLevel,
                 exp = user?.fireExp ?: 0,
                 fireColorHex = user?.fireColor ?: "#FFFF9500",
                 showLevel = true
@@ -111,6 +111,35 @@ fun HomeScreen(
         },
         bottomBar = { ModakBottomBar(navController, "home") },
     ) { innerPadding ->
+        var showDebugDialog by remember { mutableStateOf(false) }
+        
+        if (showDebugDialog) {
+            AlertDialog(
+                onDismissRequest = { showDebugDialog = false },
+                title = { Text("DEBUG: EXP Control", color = Color.White) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Current Level: $currentLevel", color = Color.Gray)
+                        Text("Current Exp: ${user?.fireExp}", color = Color.Gray)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(onClick = { viewModel.debugAddExp(100) }) { Text("+100") }
+                            Button(onClick = { viewModel.debugAddExp(500) }) { Text("+500") }
+                            Button(onClick = { viewModel.debugAddExp(1000) }) { Text("+1k") }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(onClick = { viewModel.debugSetExp(0) }) { Text("Lv.1 (0)") }
+                            Button(onClick = { viewModel.debugSetExp(300) }) { Text("Lv.2") }
+                            Button(onClick = { viewModel.debugSetExp(1000) }) { Text("Lv.3") }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showDebugDialog = false }) { Text("Close") }
+                },
+                containerColor = SurfaceDark
+            )
+        }
+
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -121,39 +150,17 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .weight(2f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .pointerInput(Unit) {
+                        detectTapGestures(onLongPress = { showDebugDialog = true })
+                    },
                 contentAlignment = Alignment.Center,
             ) {
-                // Background size scales with character - enlarged for better glow
-                val glowSize = backgroundSize * 2.0f
-                Box(
-                    modifier = Modifier
-                        .size(glowSize)
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    fireColor.copy(alpha = 0.5f),
-                                    fireColor.copy(alpha = 0.2f),
-                                    fireColor.copy(alpha = 0.05f),
-                                    Color.Transparent
-                                ),
-                            )
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    // Modak Character with Fire Animation
-                    // Apply flame color based on user level
-                    // Scale entire character proportionally
-                    // clipToBounds = false allows animation to overflow when scaled without clipping
-                    ModakCharacter(
-                        flameColor = fireColor,
-                        scale = characterScale,
-                        clipToBounds = false,
-                        modifier = Modifier
-                            .size(240.dp)
-                            .padding(bottom = 20.dp),
-                    )
-                }
+                ModakGlowCharacter(
+                    level = currentLevel,
+                    exp = user?.fireExp ?: 0,
+                    fireColor = fireColor
+                )
             }
 
             // Bottom 1/3 section for timer and button (fixed position)
