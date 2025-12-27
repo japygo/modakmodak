@@ -122,15 +122,8 @@ fun QuantitySelectionDialog(
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                         )
-                        Icon(
-                            Icons.Rounded.LocalFireDepartment,
-                            contentDescription = "Coins",
-                            tint = FireOrange,
-                            modifier = Modifier.size(20.dp),
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "$totalPrice",
+                            text = "$totalPrice " + androidx.compose.ui.res.stringResource(com.japygo.modakmodak.R.string.currency_unit),
                             color = FireOrange,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,

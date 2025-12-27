@@ -2,6 +2,7 @@
     <string name="app_name">ModakModak</string>
 
     <!-- Common -->
+    <string name="currency_unit">Modak</string>
     <string name="common_confirm">Confirm</string>
     <string name="common_cancel">Cancel</string>
     <string name="common_buy">Buy</string>
@@ -18,31 +19,31 @@
     <string name="nav_settings">Settings</string>
 
     <!-- Home Screen -->
-    <string name="home_timer_adjust_hint">Touch to adjust time</string>
+    <string name="home_timer_adjust_hint">Tap to Edit</string>
     <string name="home_start_button">Start %1$s</string>
     <string name="home_preset_dialog_title">Select Timer</string>
-    <string name="home_preset_dialog_custom">Manual Input</string>
-    <string name="home_preset_dialog_subtitle">Saved Presets</string>
+    <string name="home_preset_dialog_custom">Manual</string>
+    <string name="home_preset_dialog_subtitle">Presets</string>
     <string name="home_preset_dialog_empty">No saved presets.</string>
-    <string name="home_custom_timer_title">Custom Timer Settings</string>
+    <string name="home_custom_timer_title">Custom Timer</string>
     <string name="home_level_prefix">Lv.</string>
 
 
     <!-- Focus Screen -->
-    <string name="focus_exit_dialog_title">Stop Focus?</string>
-    <string name="focus_exit_dialog_text">If you exit now, your focus time won\'t be recorded and you won\'t earn coins. Do you really want to stop?</string>
+    <string name="focus_exit_dialog_title">Stop Focus</string>
+    <string name="focus_exit_dialog_text">If you exit now, your focus time won\'t be recorded and you won\'t earn Modak. Do you really want to stop?</string>
     <string name="focus_default_tag">Focus Mode</string>
     <string name="focusing_text">Focusing...</string>
     <string name="focus_paused_text">Paused</string>
     <string name="focus_give_up_button">Hold for 3s to give up</string>
 
     <!-- Stats Screen -->
-    <string name="stats_heatmap_title">Study Heatmap</string>
-    <string name="stats_logs_title">Recent Logs</string>
+    <string name="stats_heatmap_title">Heatmap</string>
+    <string name="stats_logs_title">Logs</string>
     <string name="stats_summary_total_focus">Total Focus</string>
     <string name="stats_summary_success_rate">Success Rate</string>
     <string name="stats_date_format">MMMM yyyy</string>
-    <string name="stats_log_default_title">Focus Session</string>
+    <string name="stats_log_default_title">Focus</string>
     <string name="stats_log_given_up_suffix"> (Given Up)</string>
     <string name="stats_log_empty">No recent study logs.</string>
     <string name="filter_all">All</string>
@@ -63,9 +64,9 @@
     <string name="shop_inventory_use_hint">Touch to use</string>
     <string name="shop_inventory_depleted">Depleted</string>
     <string name="shop_bought_item">Bought %1$s!</string>
-    <string name="shop_buy_failed">Failed to buy %1$s (Not enough coins?)</string>
+    <string name="shop_buy_failed">Purchase Failed (Not enough Modak)</string>
     <string name="shop_used_item">Used item!</string>
-    <string name="shop_use_failed">Failed to use item</string>
+    <string name="shop_use_failed">Cannot Use</string>
     <string name="shop_total_price">Total</string>
 
     <!-- Item Names -->
@@ -86,30 +87,30 @@
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>
-    <string name="settings_section_language">App Language</string>
+    <string name="settings_section_language">Language</string>
     <string name="settings_language_en">English</string>
     <string name="settings_language_ko">한국어 (Korean)</string>
-    <string name="settings_section_sound">Sound &amp; Haptics</string>
+    <string name="settings_section_sound">Notifications</string>
     <string name="settings_volume_bgm">BGM Volume</string>
     <string name="settings_volume_sfx">SFX Volume</string>
     <string name="settings_toggle_vibration">Vibration</string>
     <string name="settings_toggle_notifications">App Notifications</string>
-    <string name="settings_section_focus">Focus Mode</string>
+    <string name="settings_section_focus">Focus</string>
     <string name="settings_toggle_screen_on">Keep Screen On</string>
-    <string name="settings_section_break">Break Time</string>
+    <string name="settings_section_break">Break</string>
     <string name="settings_toggle_break_screen">Enable Break Screen</string>
     <string name="settings_break_duration">Break Duration</string>
     <string name="settings_toggle_break_timer">Show Break Timer</string>
-    <string name="settings_section_presets">Timer Presets</string>
+    <string name="settings_section_presets">Timer</string>
     <string name="settings_presets_empty">No presets added yet. Add one to set as default.</string>
     <string name="settings_preset_label">Preset</string>
-    <string name="settings_section_account">Account &amp; Data</string>
+    <string name="settings_section_account">Data</string>
     <string name="settings_reset_data">Reset All Data</string>
-    <string name="settings_section_info">App Info</string>
+    <string name="settings_section_info">Info</string>
     <string name="settings_version_label">Version</string>
-    <string name="settings_reset_dialog_title">Reset All Data?</string>
-    <string name="settings_reset_dialog_text">This will delete all your coins, inventory, and study logs. This action cannot be undone.</string>
-    <string name="settings_add_preset_title">Add New Preset</string>
+    <string name="settings_reset_dialog_title">Reset Data</string>
+    <string name="settings_reset_dialog_text">This will delete all your Modak, inventory, and study logs. This action cannot be undone.</string>
+    <string name="settings_add_preset_title">Add Preset</string>
     <string name="settings_edit_preset_title">Edit Preset</string>
     <string name="settings_preset_dialog_default_title">Add Preset</string>
     <string name="settings_preset_dialog_tag_label">Tag Name (e.g. #study)</string>
