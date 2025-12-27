@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -95,139 +96,201 @@ fun HomeScreen(
 
     val currentLevel = user?.fireLevel ?: 1
 
-    Scaffold(
-        modifier = Modifier
-            .statusBarsPadding()
-            .navigationBarsPadding(),
-        containerColor = BackgroundDark,
-        topBar = { 
-            ModakTopBar(
-                coins = user?.currentCoin ?: 0,
-                level = currentLevel,
-                exp = user?.fireExp ?: 0,
-                fireColorHex = user?.fireColor ?: "#FFFF9500",
-                showLevel = true
-            ) 
-        },
-        bottomBar = { ModakBottomBar(navController, "home") },
-    ) { innerPadding ->
-        var showDebugDialog by remember { mutableStateOf(false) }
-        
-        if (showDebugDialog) {
-            AlertDialog(
-                onDismissRequest = { showDebugDialog = false },
-                title = { Text("DEBUG: EXP Control", color = Color.White) },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Current Level: $currentLevel", color = Color.Gray)
-                        Text("Current Exp: ${user?.fireExp}", color = Color.Gray)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = { viewModel.debugAddExp(100) }) { Text("+100") }
-                            Button(onClick = { viewModel.debugAddExp(500) }) { Text("+500") }
-                            Button(onClick = { viewModel.debugAddExp(1000) }) { Text("+1k") }
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = { viewModel.debugSetExp(0) }) { Text("Lv.1 (0)") }
-                            Button(onClick = { viewModel.debugSetExp(300) }) { Text("Lv.2") }
-                            Button(onClick = { viewModel.debugSetExp(1000) }) { Text("Lv.3") }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showDebugDialog = false }) { Text("Close") }
-                },
-                containerColor = SurfaceDark
+    // Full screen container
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // 1. Background Image Layer (The "Wall")
+
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = R.drawable.home_background),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            )
+            
+            // Dimming Layer
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+            )
+
+            // Top Gradient (Black to Transparent)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .align(Alignment.TopCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.8f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
+
+            // Bottom Gradient (Transparent to Black)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                BackgroundDark
+                            )
+                        )
+                    )
             )
         }
 
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            // Top 2/3 section for character and background
-            Box(
-                modifier = Modifier
-                    .weight(1.5f)
-                    .fillMaxWidth()
-                    .pointerInput(Unit) {
-                        detectTapGestures(onLongPress = { showDebugDialog = true })
-                    },
-                contentAlignment = Alignment.Center,
-            ) {
-                ModakGlowCharacter(
+        // 2. Scaffold (The "Furniture") - Transparent to show background
+        Scaffold(
+            modifier = Modifier.navigationBarsPadding(), // Only pad bottom nav bar from system nav
+            containerColor = Color.Transparent,
+            topBar = { 
+                ModakTopBar(
+                    coins = user?.currentCoin ?: 0,
                     level = currentLevel,
                     exp = user?.fireExp ?: 0,
-                    fireColor = fireColor
+                    fireColorHex = user?.fireColor ?: "#FFFF9500",
+                    showLevel = true,
+                    modifier = Modifier.statusBarsPadding() // Pad top bar from status bar
+                ) 
+            },
+            bottomBar = { ModakBottomBar(navController, "home") },
+        ) { innerPadding ->
+            var showDebugDialog by remember { mutableStateOf(false) }
+
+            if (showDebugDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDebugDialog = false },
+                    title = { Text("DEBUG: EXP Control", color = Color.White) },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("Current Level: $currentLevel", color = Color.Gray)
+                            Text("Current Exp: ${user?.fireExp}", color = Color.Gray)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Button(onClick = { viewModel.debugAddExp(100) }) { Text("+100") }
+                                Button(onClick = { viewModel.debugAddExp(500) }) { Text("+500") }
+                                Button(onClick = { viewModel.debugAddExp(1000) }) { Text("+1k") }
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Button(onClick = { viewModel.debugSetExp(0) }) { Text("Lv.1 (0)") }
+                                Button(onClick = { viewModel.debugSetExp(300) }) { Text("Lv.2") }
+                                Button(onClick = { viewModel.debugSetExp(1000) }) { Text("Lv.3") }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showDebugDialog = false }) { Text("Close") }
+                    },
+                    containerColor = SurfaceDark
                 )
             }
 
-            // Bottom 1/3 section for timer and button (fixed position)
+            // 3. Content Layer
             Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxSize()
+                    .padding(innerPadding), // Content respects bars
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
             ) {
-                // Timer
-                val hours = sessionDuration / 60
-                val minutes = sessionDuration % 60
-                val timeText = if (hours > 0) String.format(
-                    "%02d:%02d:00",
-                    hours,
-                    minutes,
-                ) else String.format("%02d:00", minutes)
+                // Top section for character (aligned to where the clearing is)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .pointerInput(Unit) {
+                            detectTapGestures(onLongPress = { showDebugDialog = true })
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    // Adjust padding/offset to place character exactly in the clearing
+                    // The clearing is roughly in the center but slightly lower in visual weight
+                    Box(modifier = Modifier.padding(top = 100.dp)) {
+                        ModakGlowCharacter(
+                            level = currentLevel,
+                            exp = user?.fireExp ?: 0,
+                            fireColor = fireColor
+                        )
+                    }
+                }
 
-                Text(
-                    text = timeText,
-                    color = Color.White,
-                    fontSize = 54.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { showPresetSelector = true },
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = stringResource(R.string.home_timer_adjust_hint),
-                    color = Color.Gray,
-                    fontSize = 14.sp,
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Start Button with tag inside
-                Button(
-                    onClick = {
-                        val encodedTag = Uri.encode(sessionTag)
-                        navController.navigate("focus/$sessionDuration/$encodedTag")
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = PaddingValues(0.dp),
+                // Bottom section for timer and button
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 48.dp)
-                        .height(56.dp)
-                        .clip(RoundedCornerShape(28.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(Orange, FireOrange),
-                            ),
-                        ),
+                        .padding(bottom = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Bottom,
                 ) {
+                    // Timer
+                    val hours = sessionDuration / 60
+                    val minutes = sessionDuration % 60
+                    val timeText = if (hours > 0) String.format(
+                        "%02d:%02d:00",
+                        hours,
+                        minutes,
+                    ) else String.format("%02d:00", minutes)
+
                     Text(
-                        text = stringResource(R.string.home_start_button, sessionTag),
+                        text = timeText,
                         color = Color.White,
-                        fontSize = 18.sp,
+                        fontSize = 54.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.clickable { showPresetSelector = true },
                     )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = stringResource(R.string.home_timer_adjust_hint),
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 14.sp,
+                    )
+
+                    Spacer(modifier = Modifier.height(60.dp))
+
+                    // Start Button with tag inside
+                    Button(
+                        onClick = {
+                            val encodedTag = Uri.encode(sessionTag)
+                            navController.navigate("focus/$sessionDuration/$encodedTag")
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 48.dp)
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(Orange, FireOrange),
+                                ),
+                            ),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.home_start_button, sessionTag),
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 24.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
-                
-                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }

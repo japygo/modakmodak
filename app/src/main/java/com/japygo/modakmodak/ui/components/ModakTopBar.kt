@@ -33,7 +33,8 @@ fun ModakTopBar(
     level: Int,
     exp: Int,
     fireColorHex: String = "#FFFF9500",
-    showLevel: Boolean = true
+    showLevel: Boolean = true,
+    modifier: Modifier = Modifier
 ) {
     val fireColor = try {
         Color(android.graphics.Color.parseColor(fireColorHex))
@@ -43,7 +44,7 @@ fun ModakTopBar(
     val progress = LevelUtils.getLevelProgress(exp)
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(72.dp)
             .padding(horizontal = 16.dp),
