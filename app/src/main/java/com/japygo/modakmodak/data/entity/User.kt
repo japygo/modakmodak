@@ -11,5 +11,6 @@ data class User(
     val streakDays: Int = 0,
     val lastLoginDate: Long = 0, // Timestamp
     val fireExp: Int = 0,
-    val fireLevel: Int = 1
+    val fireLevel: Int = 1,
+    val fireColor: String = "#FFFF9500"
 )

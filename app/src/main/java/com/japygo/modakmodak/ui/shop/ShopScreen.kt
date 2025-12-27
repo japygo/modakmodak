@@ -52,6 +52,8 @@ import androidx.navigation.NavController
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.data.entity.ShopItem
 import com.japygo.modakmodak.ui.components.ModakBottomBar
+import com.japygo.modakmodak.ui.components.ModakCoinBadge
+import com.japygo.modakmodak.ui.components.ModakTopBar
 import com.japygo.modakmodak.ui.components.ModakSnackbarHost
 import com.japygo.modakmodak.ui.theme.BackgroundDark
 import com.japygo.modakmodak.ui.theme.FireOrange
@@ -128,6 +130,7 @@ fun ShopScreen(
             itemName = localizedName,
             pricePerUnit = item.price,
             maxQuantity = realMax,
+            confirmButtonText = stringResource(R.string.common_buy),
             onDismiss = { showBuyDialog = false },
             onConfirm = { quantity ->
                 viewModel.buyItem(item, quantity)
@@ -142,8 +145,12 @@ fun ShopScreen(
             .navigationBarsPadding(),
         containerColor = BackgroundDark,
         topBar = {
-            ShopTopBar(
+            ModakTopBar(
                 coins = user?.currentCoin ?: 0,
+                level = user?.fireLevel ?: 1,
+                exp = user?.fireExp ?: 0,
+                fireColorHex = user?.fireColor ?: "#FFFF9500",
+                showLevel = false
             )
         },
         bottomBar = { ModakBottomBar(navController, "shop") },
@@ -167,33 +174,6 @@ fun ShopScreen(
 }
 
 
-@Composable
-fun ShopTopBar(coins: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(20))
-                .background(SurfaceHighlight.copy(alpha = 0.5f))
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                Icons.Rounded.LocalFireDepartment,
-                contentDescription = "Coins",
-                tint = FireOrange,
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text("$coins", color = FireOrange, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
 
 
 @Composable

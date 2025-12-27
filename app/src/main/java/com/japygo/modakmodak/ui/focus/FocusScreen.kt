@@ -177,7 +177,14 @@ fun FocusScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 // Character and Glow Section
-                val fireColor = getFireColorByLevel(user?.fireLevel ?: 1)
+                // Character and Glow Section
+                val fireColor = remember(user?.fireColor) {
+                    try {
+                        Color(android.graphics.Color.parseColor(user?.fireColor ?: "#FFFF9500"))
+                    } catch (e: Exception) {
+                        FireOrange
+                    }
+                }
                 val characterScale = if (isFocusing) 1.05f else 1.0f
                 val glowSize = 500.dp * characterScale
 
@@ -351,19 +358,5 @@ fun formatTime(seconds: Int): String {
         "%02d:%02d:%02d".format(h, m, s)
     } else {
         "%02d:%02d".format(m, s)
-    }
-}
-
-/**
- * Returns the fire color based on the user's level
- * (Sync with HomeScreen.kt)
- */
-private fun getFireColorByLevel(level: Int): Color {
-    return when (level) {
-        in 1..5 -> Color(0xFFFF9500) // Orange
-        in 6..10 -> Color(0xFFFF6B35) // Red-Orange
-        in 11..15 -> Color(0xFFFF3B30) // Red
-        in 16..20 -> Color(0xFFFF2D92) // Purple-Red
-        else -> Color(0xFFBF5AF2) // Blue-Purple (21+)
     }
 }

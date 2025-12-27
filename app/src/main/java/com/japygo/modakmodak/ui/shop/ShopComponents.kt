@@ -45,6 +45,7 @@ fun QuantitySelectionDialog(
     itemName: String,
     pricePerUnit: Int, // 0 for usage (no price)
     maxQuantity: Int,
+    confirmButtonText: String = androidx.compose.ui.res.stringResource(com.japygo.modakmodak.R.string.common_confirm),
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit,
 ) {
@@ -161,7 +162,7 @@ fun QuantitySelectionDialog(
                         shape = RoundedCornerShape(12.dp),
                     ) {
                         Text(
-                            androidx.compose.ui.res.stringResource(com.japygo.modakmodak.R.string.common_confirm),
+                            text = confirmButtonText,
                             color = White,
                             fontWeight = FontWeight.Bold,
                         )

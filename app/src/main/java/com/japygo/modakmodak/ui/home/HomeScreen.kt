@@ -58,6 +58,8 @@ import androidx.navigation.NavController
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.ui.components.ModakBottomBar
 import com.japygo.modakmodak.ui.components.ModakCharacter
+import com.japygo.modakmodak.ui.components.ModakCoinBadge
+import com.japygo.modakmodak.ui.components.ModakTopBar
 import com.japygo.modakmodak.ui.theme.BackgroundDark
 import com.japygo.modakmodak.ui.theme.FireOrange
 import com.japygo.modakmodak.ui.theme.Orange
@@ -79,9 +81,13 @@ fun HomeScreen(
 
     var showPresetSelector by remember { mutableStateOf(false) }
 
-    // Get fire color based on level
-    val fireColor = remember(user?.fireLevel) {
-        getFireColorByLevel(user?.fireLevel ?: 1)
+    // Get fire color from user state
+    val fireColor = remember(user?.fireColor) {
+        try {
+            Color(android.graphics.Color.parseColor(user?.fireColor ?: "#FFFF9500"))
+        } catch (e: Exception) {
+            FireOrange
+        }
     }
 
     // TODO: Replace with actual logic based on logs added
@@ -95,11 +101,12 @@ fun HomeScreen(
             .navigationBarsPadding(),
         containerColor = BackgroundDark,
         topBar = { 
-            HomeTopBar(
-                navController = navController, 
+            ModakTopBar(
                 coins = user?.currentCoin ?: 0,
                 level = user?.fireLevel ?: 1,
-                exp = user?.fireExp ?: 0
+                exp = user?.fireExp ?: 0,
+                fireColorHex = user?.fireColor ?: "#FFFF9500",
+                showLevel = true
             ) 
         },
         bottomBar = { ModakBottomBar(navController, "home") },
@@ -372,81 +379,6 @@ fun PresetSelectionDialog(
         )
     }
 }
-
-@Composable
-fun HomeTopBar(
-    navController: NavController,
-    coins: Int,
-    level: Int,
-    exp: Int
-) {
-    val fireColor = getFireColorByLevel(level)
-    val progress = LevelUtils.getLevelProgress(exp)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // Left: Coin chip
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .background(SurfaceHighlight.copy(alpha = 0.5f))
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.LocalFireDepartment,
-                contentDescription = null,
-                tint = FireOrange,
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = "$coins",
-                color = FireOrange,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        // Right: Level and Exp Bar
-        Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "${stringResource(R.string.home_level_prefix)}$level",
-                color = White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            // Custom thin progress bar
-            Box(
-                modifier = Modifier
-                    .width(80.dp)
-                    .height(4.dp)
-                    .clip(CircleShape)
-                    .background(SurfaceHighlight.copy(alpha = 0.3f))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(progress)
-                        .height(4.dp)
-                        .clip(CircleShape)
-                        .background(fireColor)
-                )
-            }
-        }
-    }
-}
-
-// HomeBottomBar component has been moved to ModakBottomBar.kt
 
 /**
  * Returns the fire color based on the user's level

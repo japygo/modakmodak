@@ -40,6 +40,9 @@ class ModakRepository(
         // Initialize/Update Shop Items to ensure latest icons/names
         shopDao.insertShopItems(InitialShopItems)
 
+        // Test data for 99+ verification
+        inventoryDao.insertInventory(Inventory("wood_twig", 100))
+
         // Initialize Timer Presets if empty
         val presets = timerPresetDao.getAllPresets().firstOrNull()
         if (presets.isNullOrEmpty()) {
@@ -137,6 +140,8 @@ class ModakRepository(
     
     suspend fun useItem(itemId: String, quantity: Int): Boolean {
         val inventoryItem = inventoryDao.getInventoryItem(itemId) ?: return false
+        val currentUser = userDao.getUser().firstOrNull() ?: return false
+
         if (inventoryItem.quantity >= quantity) {
             // Decrement
             if (inventoryItem.quantity == quantity) {
@@ -148,8 +153,39 @@ class ModakRepository(
             
             // Effect (Apply multiple times)
             val shopItem = shopDao.getShopItem(itemId)
-            if (shopItem != null && shopItem.type == "EXP") {
-                addExp(shopItem.value * quantity)
+            if (shopItem != null) {
+                when (shopItem.type) {
+                    "EXP" -> addExp(shopItem.value * quantity)
+                    "COLOR" -> {
+                        // magic_blue has type "EXP" in current initial data, 
+                        // but let's handle its ID specifically as requested.
+                        if (itemId == "magic_blue") {
+                            val colors = listOf(
+                                "#FFFF9500", // Orange
+                                "#FFFF6B35", // Red-Orange
+                                "#FFFF3B30", // Red
+                                "#FFFF2D92", // Purple-Red
+                                "#BF5AF2", // Blue-Purple
+                                "#00BFFF", // Deep Sky Blue
+                                "#32CD32", // Lime Green
+                                "#FFD700", // Gold
+                                "#00FA9A", // Medium Spring Green
+                                "#1E90FF"  // Dodger Blue
+                            )
+                            val randomColor = colors.random()
+                            userDao.insertUser(currentUser.copy(fireColor = randomColor))
+                        }
+                    }
+                }
+                // Special handling for magic_blue even if type is EXP (existing data)
+                if (itemId == "magic_blue" && shopItem.type == "EXP") {
+                    val colors = listOf(
+                        "#FFFF9500", "#FFFF6B35", "#FFFF3B30", "#FFFF2D92", 
+                        "#BF5AF2", "#00BFFF", "#32CD32", "#FFD700", "#00FA9A", "#1E90FF"
+                    )
+                    val randomColor = colors.random()
+                    userDao.insertUser(currentUser.copy(fireColor = randomColor))
+                }
             }
             return true
         }

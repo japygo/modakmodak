@@ -18,7 +18,7 @@ val InitialShopItems = listOf(
         price = 200,
         type = "EXP",
         value = 100,
-        description = "모닥모닥 기본 연료",
+        description = "소박하지만 든든한 온기",
         imageUrl = "shop_item_wood_log"
     ),
     ShopItem(
@@ -27,16 +27,16 @@ val InitialShopItems = listOf(
         price = 500,
         type = "EXP",
         value = 300,
-        description = "오래 타오르는 통나무",
+        description = "묵직하게 머무는 열기",
         imageUrl = "shop_item_wood_big"
     ),
     ShopItem(
         id = "magic_blue",
         name = "오로라 가루",
         price = 1000,
-        type = "COSMETIC",
+        type = "COLOR",
         value = 0,
-        description = "신비로운 파란 불꽃",
+        description = "신비로운 운명의 불꽃",
         imageUrl = "shop_item_magic_powder"
     )
 )

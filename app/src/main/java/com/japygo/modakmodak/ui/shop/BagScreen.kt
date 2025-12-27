@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,6 +55,8 @@ import com.japygo.modakmodak.R
 import com.japygo.modakmodak.data.entity.Inventory
 import com.japygo.modakmodak.data.entity.ShopItem
 import com.japygo.modakmodak.ui.components.ModakBottomBar
+import com.japygo.modakmodak.ui.components.ModakCoinBadge
+import com.japygo.modakmodak.ui.components.ModakTopBar
 import com.japygo.modakmodak.ui.components.ModakSnackbarHost
 import com.japygo.modakmodak.ui.theme.BackgroundDark
 import com.japygo.modakmodak.ui.theme.FireOrange
@@ -112,21 +116,20 @@ fun BagScreen(
 
     if (showUseDialog && selectedInventoryItem != null) {
         val item = selectedInventoryItem!!
-        val shopItem = shopItems.find { it.id == item.itemId }
-
-        val nameResId = when (shopItem?.id) {
+        val nameResId = when (item.itemId) {
             "wood_twig" -> R.string.item_wood_twig_name
             "wood_log" -> R.string.item_wood_log_name
             "wood_big" -> R.string.item_wood_big_name
             "magic_blue" -> R.string.item_magic_blue_name
             else -> null
         }
-        val localizedName = nameResId?.let { stringResource(it) } ?: shopItem?.name ?: "Item"
+        val localizedName = nameResId?.let { stringResource(it) } ?: item.itemId
 
         QuantitySelectionDialog(
             itemName = localizedName,
             pricePerUnit = 0, // Usage doesn't cost coins
             maxQuantity = item.quantity,
+            confirmButtonText = stringResource(R.string.common_use),
             onDismiss = { showUseDialog = false },
             onConfirm = { quantity ->
                 viewModel.useItem(item, quantity)
@@ -141,7 +144,13 @@ fun BagScreen(
             .navigationBarsPadding(),
         containerColor = BackgroundDark,
         topBar = {
-            BagTopBar(coins = user?.currentCoin ?: 0)
+            ModakTopBar(
+                coins = user?.currentCoin ?: 0,
+                level = user?.fireLevel ?: 1,
+                exp = user?.fireExp ?: 0,
+                fireColorHex = user?.fireColor ?: "#FFFF9500",
+                showLevel = false
+            )
         },
         bottomBar = { ModakBottomBar(navController, "bag") },
         snackbarHost = { ModakSnackbarHost(snackbarHostState) },
@@ -164,33 +173,6 @@ fun BagScreen(
     }
 }
 
-@Composable
-fun BagTopBar(coins: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(20))
-                .background(SurfaceHighlight.copy(alpha = 0.5f))
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                Icons.Rounded.LocalFireDepartment,
-                contentDescription = "Coins",
-                tint = FireOrange,
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text("$coins", color = FireOrange, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
 
 @Composable
 fun InventoryGrid(
@@ -275,14 +257,19 @@ fun InventoryItemCard(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
+                    .size(24.dp)
                     .clip(CircleShape)
-                    .background(FireOrange)
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                    .background(FireOrange),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "x${inventory.quantity}",
+                    if (inventory.quantity > 99) "99+" else "x${inventory.quantity}",
                     color = BackgroundDark,
-                    fontSize = 12.sp,
+                    fontSize = when {
+                        inventory.quantity > 99 -> 8.sp
+                        inventory.quantity < 10 -> 12.sp
+                        else -> 9.sp
+                    },
                     fontWeight = FontWeight.ExtraBold,
                 )
             }
@@ -297,6 +284,14 @@ fun InventoryItemCard(
             "magic_blue" -> R.string.item_magic_blue_name
             else -> null
         }
+        val descResId = when (shopItem.id) {
+            "wood_twig" -> R.string.item_wood_twig_desc
+            "wood_log" -> R.string.item_wood_log_desc
+            "wood_big" -> R.string.item_wood_big_desc
+            "magic_blue" -> R.string.item_magic_blue_desc
+            else -> null
+        }
+
         Text(
             nameResId?.let { stringResource(it) } ?: shopItem.name,
             color = White,
@@ -306,10 +301,32 @@ fun InventoryItemCard(
         )
 
         Text(
-            stringResource(R.string.shop_inventory_use_hint),
-            color = FireOrange.copy(alpha = 0.8f),
+            descResId?.let { stringResource(it) } ?: shopItem.description,
+            color = TextSecondary,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            modifier = Modifier.padding(top = 2.dp),
         )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = SurfaceHighlight.copy(alpha = 0.5f),
+            shape = RoundedCornerShape(12.dp),
+        ) {
+            Row(
+                modifier = Modifier.padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.common_use),
+                    color = FireOrange,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
     }
 }

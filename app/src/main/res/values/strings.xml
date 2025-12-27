@@ -4,6 +4,8 @@
     <!-- Common -->
     <string name="common_confirm">Confirm</string>
     <string name="common_cancel">Cancel</string>
+    <string name="common_buy">Buy</string>
+    <string name="common_use">Use</string>
     <string name="common_reset">Reset</string>
     <string name="common_stop">Stop</string>
     <string name="common_continue">Continue</string>
@@ -72,9 +74,9 @@
 
     <!-- Item Descriptions -->
     <string name="item_wood_twig_desc">Small but precious spark</string>
-    <string name="item_wood_log_desc">Standard Modak fuel</string>
-    <string name="item_wood_big_desc">Long-burning log</string>
-    <string name="item_magic_blue_desc">Mysterious blue flame</string>
+    <string name="item_wood_log_desc">Humble yet steady warmth</string>
+    <string name="item_wood_big_desc">Heavily lingering heat</string>
+    <string name="item_magic_blue_desc">Mysterious flame of fate</string>
 
     <!-- Break Screen -->
     <string name="break_title">Well done!</string>
