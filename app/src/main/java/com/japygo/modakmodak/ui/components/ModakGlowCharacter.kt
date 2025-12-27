@@ -30,12 +30,12 @@ data class GlowConfig(
  */
 private fun getGlowConfigForLevel(level: Int): GlowConfig {
     return when (level) {
-        1 -> GlowConfig(layerCount = 1, glowMultiplier = 1.4f, gradientStops = 5, baseAlpha = 0.12f)
-        2 -> GlowConfig(layerCount = 2, glowMultiplier = 1.7f, gradientStops = 5, baseAlpha = 0.15f)
-        3 -> GlowConfig(layerCount = 2, glowMultiplier = 2.0f, gradientStops = 5, baseAlpha = 0.18f)
-        4 -> GlowConfig(layerCount = 3, glowMultiplier = 2.4f, gradientStops = 5, baseAlpha = 0.20f)
-        5 -> GlowConfig(layerCount = 3, glowMultiplier = 2.8f, gradientStops = 5, baseAlpha = 0.22f)
-        else -> GlowConfig(layerCount = 1, glowMultiplier = 1.4f, gradientStops = 5, baseAlpha = 0.12f)
+        1 -> GlowConfig(layerCount = 1, glowMultiplier = 1.4f, gradientStops = 5, baseAlpha = 0.22f)
+        2 -> GlowConfig(layerCount = 2, glowMultiplier = 1.7f, gradientStops = 5, baseAlpha = 0.25f)
+        3 -> GlowConfig(layerCount = 2, glowMultiplier = 2.0f, gradientStops = 5, baseAlpha = 0.28f)
+        4 -> GlowConfig(layerCount = 3, glowMultiplier = 2.4f, gradientStops = 5, baseAlpha = 0.30f)
+        5 -> GlowConfig(layerCount = 3, glowMultiplier = 2.8f, gradientStops = 5, baseAlpha = 0.32f)
+        else -> GlowConfig(layerCount = 1, glowMultiplier = 1.4f, gradientStops = 5, baseAlpha = 0.22f)
     }
 }
 
