@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -78,9 +79,8 @@ fun FocusScreen(
     val isFocusing by viewModel.isFocusing.collectAsState()
     val sessionState by viewModel.sessionState.collectAsState()
     val isBreakEnabled by viewModel.isBreakEnabled.collectAsState()
-    val user by viewModel.user.collectAsState()
+    val initialDuration by viewModel.initialDuration.collectAsState()
 
-    // Status bar and Navigation bar color adjustment
     // Status bar and Navigation bar color adjustment
     val view = LocalView.current
     val darkColor = DeepNavy.toArgb()
@@ -182,41 +182,29 @@ fun FocusScreen(
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Top section for character (1.8f for slightly higher position)
-            Column(
+            // Main Timer Section with Circle
+            Box(
                 modifier = Modifier
-                    .weight(1.8f)
+                    .weight(1.5f)
                     .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                contentAlignment = Alignment.Center
             ) {
-                // Character and Glow Section
-                // Character and Glow Section
-                val fireColor = remember(user?.fireColor) {
-                    try {
-                        Color(android.graphics.Color.parseColor(user?.fireColor ?: "#FFFF9500"))
-                    } catch (e: Exception) {
-                        FireOrange
-                    }
-                }
-
-                ModakGlowCharacter(
-                    level = user?.fireLevel ?: 1,
-                    exp = user?.fireExp ?: 0,
-                    fireColor = fireColor,
-                    extraScale = if (isFocusing) 1.05f else 1.0f
+                val progress = if (initialDuration > 0) timeLeft.toFloat() / initialDuration.toFloat() else 0f
+                
+                // Circular Progress
+                // Rotate to make it disappear clockwise (fill retracts to 12 o'clock)
+                androidx.compose.material3.CircularProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier
+                        .size(320.dp)
+                        .rotate(360f * (1f - progress)),
+                    color = FireOrange,
+                    trackColor = White.copy(alpha = 0.1f),
+                    strokeWidth = 12.dp,
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
                 )
-            }
 
-            // Bottom section for information and button (1.2f)
-            Column(
-                modifier = Modifier
-                    .weight(1.2f)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
-            ) {
-                // Timer - Placed at the top of this section
+                // Time Text inside Circle
                 Text(
                     text = formatTime(timeLeft),
                     color = White,
@@ -224,15 +212,22 @@ fun FocusScreen(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-2).sp,
                 )
+            }
 
-                // Spacer to push labels to center between timer and button
-                Spacer(modifier = Modifier.weight(1f))
-
+            // Bottom section for information and button
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+            ) {
                 // Mid section: Tag and Status Text
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    val rawTag = navController.currentBackStackEntry?.arguments?.getString("tag")
-                        ?: stringResource(R.string.focus_default_tag)
-                    val currentTag = Uri.decode(rawTag)
+                    val currentTag = remember {
+                         val raw = navController.currentBackStackEntry?.arguments?.getString("tag")
+                         if (raw != null) Uri.decode(raw) else null
+                    } ?: stringResource(R.string.focus_default_tag)
                     
                     Surface(
                         color = SurfaceHighlight.copy(alpha = 0.3f),
@@ -258,10 +253,10 @@ fun FocusScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                     
                     Text(
-                        text = if (isFocusing) stringResource(R.string.focusing_text) else stringResource(R.string.focus_paused_text),
+                        text = if (isFocusing || sessionState == 3) stringResource(R.string.focusing_text) else stringResource(R.string.focus_paused_text),
                         color = FireOrange,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
@@ -333,8 +328,8 @@ fun FocusScreen(
                     }
                 }
                 
-                // Bottom margin
-                Spacer(modifier = Modifier.height(40.dp))
+                // Bottom margin - Increased to move button up
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }

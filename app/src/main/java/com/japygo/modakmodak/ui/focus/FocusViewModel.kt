@@ -41,16 +41,20 @@ class FocusViewModel(
     val sessionState: StateFlow<Int> = _sessionState.asStateFlow()
 
     private var timer: CountDownTimer? = null
-    private var initialDurationSeconds = 0
+    private val _initialDuration = MutableStateFlow(1) // Avoid divide by zero
+    val initialDuration: StateFlow<Int> = _initialDuration.asStateFlow()
+
     private var currentTag: String? = null
 
     fun startTimer(durationMinutes: Int = 25, tag: String? = null) {
         _isFocusing.value = true
         _sessionState.value = 1
         currentTag = tag
-        initialDurationSeconds = durationMinutes * 60
+        val totalSeconds = durationMinutes * 60
+        _initialDuration.value = totalSeconds
+        _timeLeft.value = totalSeconds
+
         val durationMillis = durationMinutes * 60 * 1000L
-        _timeLeft.value = initialDurationSeconds
 
         timer = object : CountDownTimer(durationMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
@@ -61,7 +65,7 @@ class FocusViewModel(
                 _timeLeft.value = 0
                 _isFocusing.value = false
                 _sessionState.value = 2 // Success
-                logSession(true, initialDurationSeconds)
+                logSession(true, _initialDuration.value)
 
                 // Fetch latest setting directly from repository to avoid StateFlow staleness in background
                 viewModelScope.launch {
@@ -75,7 +79,7 @@ class FocusViewModel(
     }
 
     fun stopTimer() {
-        val elapsed = initialDurationSeconds - _timeLeft.value
+        val elapsed = _initialDuration.value - _timeLeft.value
         timer?.cancel()
         _isFocusing.value = false
         _sessionState.value = 3 // Failed (Given up)

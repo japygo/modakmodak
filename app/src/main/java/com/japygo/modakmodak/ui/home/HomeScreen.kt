@@ -149,7 +149,7 @@ fun HomeScreen(
             // Top 2/3 section for character and background
             Box(
                 modifier = Modifier
-                    .weight(2f)
+                    .weight(1.5f)
                     .fillMaxWidth()
                     .pointerInput(Unit) {
                         detectTapGestures(onLongPress = { showDebugDialog = true })
@@ -169,7 +169,7 @@ fun HomeScreen(
                     .weight(1f)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.Top,
             ) {
                 // Timer
                 val hours = sessionDuration / 60
@@ -195,7 +195,7 @@ fun HomeScreen(
                     fontSize = 14.sp,
                 )
 
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.weight(1f))
 
                 // Start Button with tag inside
                 Button(
@@ -226,6 +226,8 @@ fun HomeScreen(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+                
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
