@@ -49,10 +49,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.ui.components.ModakCharacter
@@ -61,10 +59,7 @@ import com.japygo.modakmodak.ui.theme.DeepNavy
 import com.japygo.modakmodak.ui.theme.FireOrange
 import com.japygo.modakmodak.ui.theme.SurfaceHighlight
 import com.japygo.modakmodak.ui.theme.White
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.graphics.toArgb
 import com.japygo.modakmodak.ui.theme.BackgroundDark
-import com.japygo.modakmodak.utils.findActivity
 
 // Alias Primary to FireOrange for consistency with plan if needed, 
 // or simpler: use FireOrange directly.
@@ -81,28 +76,9 @@ fun FocusScreen(
     val isBreakEnabled by viewModel.isBreakEnabled.collectAsState()
     val initialDuration by viewModel.initialDuration.collectAsState()
 
-    // Status bar and Navigation bar color adjustment
-    val view = LocalView.current
-    val darkColor = DeepNavy.toArgb()
-    val defaultColor = BackgroundDark.toArgb()
+    // Status bar and Navigation bar color adjustment handled by Theme (Transparent)
 
-    DisposableEffect(view, darkColor, defaultColor) {
-        val window = view.context.findActivity()?.window
-        window?.let {
-            it.statusBarColor = darkColor
-            it.navigationBarColor = darkColor
-            val controller = WindowCompat.getInsetsController(it, view)
-            controller.isAppearanceLightStatusBars = false
-            controller.isAppearanceLightNavigationBars = false
-        }
 
-        onDispose {
-            window?.let {
-                it.statusBarColor = defaultColor
-                it.navigationBarColor = defaultColor
-            }
-        }
-    }
 
     var showExitDialog by remember { mutableStateOf(false) }
 

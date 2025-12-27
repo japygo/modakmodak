@@ -27,8 +27,9 @@ import com.japygo.modakmodak.ui.theme.White
 fun ModakBottomBar(navController: NavController, currentRoute: String) {
     NavigationBar(
         modifier = Modifier.height(64.dp),
-        containerColor = BackgroundDark,
+        containerColor = Color.Transparent,
         contentColor = Color.White,
+        tonalElevation = 0.dp,
     ) {
         NavigationBarItem(
             icon = {

@@ -67,8 +67,8 @@ fun ModakModakTheme(
             val activity = view.context.findActivity()
             if (activity != null) {
                 val window = activity.window
-                window.statusBarColor = BackgroundDark.toArgb()
-                window.navigationBarColor = BackgroundDark.toArgb()
+                window.statusBarColor = Color.Transparent.toArgb()
+                window.navigationBarColor = Color.Transparent.toArgb()
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
                 WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars =
                     false
