@@ -34,10 +34,16 @@ fun ModakCharacter(
     eyeColor: Color? = null,
     scale: Float = 1.0f,
     clipToBounds: Boolean = false,
+    lottieComposition: com.airbnb.lottie.LottieComposition? = null,
 ) {
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(R.raw.default_modak),
-    )
+    val composition = if (lottieComposition != null) {
+        lottieComposition
+    } else {
+        val result by rememberLottieComposition(
+            LottieCompositionSpec.RawRes(R.raw.default_modak),
+        )
+        result
+    }
 
     // Build dynamic properties list only for non-null colors
     val dynamicPropertiesList = buildList {

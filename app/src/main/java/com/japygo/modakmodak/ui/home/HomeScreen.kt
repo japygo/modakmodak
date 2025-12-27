@@ -41,6 +41,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +65,12 @@ import com.japygo.modakmodak.ui.components.ModakCharacter
 import com.japygo.modakmodak.ui.components.ModakGlowCharacter
 import com.japygo.modakmodak.ui.components.ModakCoinBadge
 import com.japygo.modakmodak.ui.components.ModakTopBar
+import com.japygo.modakmodak.ui.splash.SplashScreen
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import com.japygo.modakmodak.ui.theme.BackgroundDark
 import com.japygo.modakmodak.ui.theme.FireOrange
 import com.japygo.modakmodak.ui.theme.Orange
@@ -82,6 +89,37 @@ fun HomeScreen(
     val timerPresets by viewModel.timerPresets.collectAsState()
     val sessionTag by viewModel.sessionTag.collectAsState()
     val sessionDuration by viewModel.sessionDurationMinutes.collectAsState()
+
+    // Preload Lottie Composition
+    val lottieComposition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(R.raw.default_modak)
+    )
+
+    // Splash Screen State
+    var minTimeElapsed by remember { mutableStateOf(false) }
+    // Initialize based on whether splash was already shown this session
+    var isSplashActive by remember { mutableStateOf(!viewModel.isSplashAlreadyShown) }
+
+    LaunchedEffect(Unit) {
+        if (!viewModel.isSplashAlreadyShown) {
+            kotlinx.coroutines.delay(2000) // 2 seconds delay
+            minTimeElapsed = true
+        } else {
+            minTimeElapsed = true // Already shown, condition met immediately
+        }
+    }
+
+
+
+    // Hide splash when User is loaded AND Lottie is ready AND minimum time elapsed
+    LaunchedEffect(user, lottieComposition, minTimeElapsed) {
+        if ((user != null) && (lottieComposition != null) && minTimeElapsed) {
+            if (isSplashActive) {
+                 isSplashActive = false
+                 viewModel.isSplashAlreadyShown = true
+            }
+        }
+    }
 
     var showPresetSelector by remember { mutableStateOf(false) }
 
@@ -220,7 +258,8 @@ fun HomeScreen(
                         ModakGlowCharacter(
                             level = currentLevel,
                             exp = user?.fireExp ?: 0,
-                            fireColor = fireColor
+                            fireColor = fireColor,
+                            lottieComposition = lottieComposition
                         )
                     }
                 }
@@ -292,6 +331,15 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(20.dp))
                 }
             }
+        }
+
+        // Splash Screen Overlay
+        AnimatedVisibility(
+            visible = isSplashActive,
+            exit = fadeOut(animationSpec = tween(500)),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            SplashScreen()
         }
     }
 

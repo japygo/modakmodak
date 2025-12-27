@@ -6,5 +6,9 @@
         <item name="android:windowBackground">#0F172A</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+
+        <!-- API 31+ Splash Screen attributes -->
+        <item name="android:windowSplashScreenBackground">#0F172A</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
     </style>
 </resources>

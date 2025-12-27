@@ -46,6 +46,9 @@ class HomeViewModel(
     private val _lastCustomDurationMinutes = MutableStateFlow(25)
     val lastCustomDurationMinutes = _lastCustomDurationMinutes.asStateFlow()
 
+    // Splash Screen State
+    var isSplashAlreadyShown = false
+
     private var hasInitialized = false
 
     init {

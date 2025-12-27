@@ -66,7 +66,8 @@ fun ModakGlowCharacter(
     fireColor: Color,
     modifier: Modifier = Modifier,
     extraScale: Float = 1.0f,
-    baseCharacterSize: Dp = 240.dp
+    baseCharacterSize: Dp = 240.dp,
+    lottieComposition: com.airbnb.lottie.LottieComposition? = null,
 ) {
     val currentLevel = level.coerceIn(1, 5)
     val levelProgress = remember(exp) { LevelUtils.getLevelProgress(exp) }
@@ -109,6 +110,7 @@ fun ModakGlowCharacter(
             modifier = Modifier
                 .size(baseCharacterSize)
                 .padding(bottom = 20.dp),
+            lottieComposition = lottieComposition,
         )
     }
 }
