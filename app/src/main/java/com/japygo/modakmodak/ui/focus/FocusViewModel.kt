@@ -66,7 +66,8 @@ class FocusViewModel(
                 // Fetch latest setting directly from repository to avoid StateFlow staleness in background
                 viewModelScope.launch {
                     if (settingsRepository.isNotificationEnabled.first()) {
-                        notificationHelper.showStudyFinishedNotification()
+                        val lang = settingsRepository.appLanguage.first()
+                        notificationHelper.showStudyFinishedNotification(lang)
                     }
                 }
             }

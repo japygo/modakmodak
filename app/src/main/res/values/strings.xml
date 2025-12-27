@@ -117,12 +117,37 @@
     <string name="settings_preset_dialog_error_min">Duration must be at least 1 minute.</string>
 
     <!-- Notifications -->
-    <string name="notif_study_finished_title">Focus Finished! 🔥</string>
-    <string name="notif_study_finished_text">You did a great job. Shall we take a warm break?</string>
+    <!-- Notifications -->
     <string name="notif_channel_name">Timer Notifications</string>
     <string name="notif_channel_desc">Notifications for study and break timers</string>
-    <string name="notif_break_finished_title">Break Finished! ✨</string>
-    <string name="notif_break_finished_text">Did you rest enough? Let\'s start a warm focus session again.</string>
+
+    <string-array name="notif_study_finished_titles">
+        <item>Focus Finished! 🔥</item>
+        <item>Great Job! 🎉</item>
+        <item>Time\'s Up! ⏰</item>
+        <item>Well Done! ✨</item>
+    </string-array>
+
+    <string-array name="notif_study_finished_texts">
+        <item>You did a great job. Shall we take a warm break?</item>
+        <item>Your focus session is complete. Time to relax!</item>
+        <item>You\'ve earned a break. Enjoy it!</item>
+        <item>Excellent work! Rest up for the next session.</item>
+    </string-array>
+
+    <string-array name="notif_break_finished_titles">
+        <item>Break Finished! ✨</item>
+        <item>Ready? 🚀</item>
+        <item>Let\'s Go! 🔥</item>
+        <item>Break Over! ☕</item>
+    </string-array>
+
+    <string-array name="notif_break_finished_texts">
+        <item>Did you rest enough? Let\'s start a warm focus session again.</item>
+        <item>Refreshed and ready? Let\'s get back to it!</item>
+        <item>Time to focus again. You got this!</item>
+        <item>Hope you had a nice break. Let\'s light up the fire again.</item>
+    </string-array>
 
     <!-- Break Messages Level 1 -->
     <string name="break_msg_level1_1">That one step you just took will take you further. Great job.</string>

@@ -2,7 +2,6 @@ package com.japygo.modakmodak.ui.theme
 
 import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.japygo.modakmodak.utils.findActivity
 
 private val DarkColorScheme = darkColorScheme(
     primary = FireOrange,
@@ -44,11 +44,7 @@ private val LightColorScheme = darkColorScheme(
     onSurface = Color.White,
 )
 
-private tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
-}
+
 
 @Composable
 fun ModakModakTheme(

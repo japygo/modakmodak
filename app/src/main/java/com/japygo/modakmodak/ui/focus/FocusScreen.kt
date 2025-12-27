@@ -60,8 +60,10 @@ import com.japygo.modakmodak.ui.theme.DeepNavy
 import com.japygo.modakmodak.ui.theme.FireOrange
 import com.japygo.modakmodak.ui.theme.SurfaceHighlight
 import com.japygo.modakmodak.ui.theme.White
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.toArgb
+import com.japygo.modakmodak.ui.theme.BackgroundDark
+import com.japygo.modakmodak.utils.findActivity
 
 // Alias Primary to FireOrange for consistency with plan if needed, 
 // or simpler: use FireOrange directly.
@@ -79,15 +81,26 @@ fun FocusScreen(
     val user by viewModel.user.collectAsState()
 
     // Status bar and Navigation bar color adjustment
+    // Status bar and Navigation bar color adjustment
     val view = LocalView.current
-    SideEffect {
-        val window = (view.context as? android.app.Activity)?.window
+    val darkColor = DeepNavy.toArgb()
+    val defaultColor = BackgroundDark.toArgb()
+
+    DisposableEffect(view, darkColor, defaultColor) {
+        val window = view.context.findActivity()?.window
         window?.let {
-            it.statusBarColor = DeepNavy.toArgb()
-            it.navigationBarColor = DeepNavy.toArgb()
+            it.statusBarColor = darkColor
+            it.navigationBarColor = darkColor
             val controller = WindowCompat.getInsetsController(it, view)
             controller.isAppearanceLightStatusBars = false
             controller.isAppearanceLightNavigationBars = false
+        }
+
+        onDispose {
+            window?.let {
+                it.statusBarColor = defaultColor
+                it.navigationBarColor = defaultColor
+            }
         }
     }
 

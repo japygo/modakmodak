@@ -37,7 +37,7 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    fun showStudyFinishedNotification() {
+    fun showStudyFinishedNotification(languageCode: String) {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -45,17 +45,24 @@ class NotificationHelper(private val context: Context) {
             context, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Ensure we use the correct locale
-        val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-        val locale = if (!appLocales.isEmpty) appLocales[0] else java.util.Locale.getDefault()
+        // Ensure we use the correct locale based on app language setting
+        val locale = java.util.Locale(languageCode)
         val config = android.content.res.Configuration(context.resources.configuration)
         config.setLocale(locale)
         val localizedContext = context.createConfigurationContext(config)
 
+        // Pick random title and text
+        val titles = localizedContext.resources.getStringArray(R.array.notif_study_finished_titles)
+        val texts = localizedContext.resources.getStringArray(R.array.notif_study_finished_texts)
+        val randomIndex = (titles.indices).random()
+
+        val title = titles.getOrElse(randomIndex) { titles[0] }
+        val text = texts.getOrElse(randomIndex) { texts[0] }
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info) // Placeholder
-            .setContentTitle(localizedContext.getString(R.string.notif_study_finished_title))
-            .setContentText(localizedContext.getString(R.string.notif_study_finished_text))
+            .setContentTitle(title)
+            .setContentText(text)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
@@ -69,23 +76,30 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    fun showBreakFinishedNotification() {
+    fun showBreakFinishedNotification(languageCode: String) {
         val intent = Intent(context, MainActivity::class.java)
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
             context, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Ensure we use the correct locale
-        val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-        val locale = if (!appLocales.isEmpty) appLocales[0] else java.util.Locale.getDefault()
+        // Ensure we use the correct locale based on app language setting
+        val locale = java.util.Locale(languageCode)
         val config = android.content.res.Configuration(context.resources.configuration)
         config.setLocale(locale)
         val localizedContext = context.createConfigurationContext(config)
 
+        // Pick random title and text
+        val titles = localizedContext.resources.getStringArray(R.array.notif_break_finished_titles)
+        val texts = localizedContext.resources.getStringArray(R.array.notif_break_finished_texts)
+        val randomIndex = (titles.indices).random()
+
+        val title = titles.getOrElse(randomIndex) { titles[0] }
+        val text = texts.getOrElse(randomIndex) { texts[0] }
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info) // Placeholder
-            .setContentTitle(localizedContext.getString(R.string.notif_break_finished_title))
-            .setContentText(localizedContext.getString(R.string.notif_break_finished_text))
+            .setContentTitle(title)
+            .setContentText(text)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

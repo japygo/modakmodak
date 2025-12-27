@@ -102,7 +102,8 @@ class BreakViewModel(
                     // Fetch latest setting directly from repository to avoid StateFlow staleness in background
                     viewModelScope.launch {
                         if (settingsRepository.isNotificationEnabled.first()) {
-                            notificationHelper.showBreakFinishedNotification()
+                            val lang = settingsRepository.appLanguage.first()
+                            notificationHelper.showBreakFinishedNotification(lang)
                         }
                     }
                 }
