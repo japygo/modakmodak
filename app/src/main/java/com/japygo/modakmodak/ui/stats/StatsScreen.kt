@@ -83,6 +83,7 @@ fun StatsScreen(
     val currentMonth by viewModel.currentMonth.collectAsState()
     val totalTime by viewModel.totalTimeThisMonth.collectAsState()
     val successRate by viewModel.monthSuccessRate.collectAsState()
+    val hardcoreCount by viewModel.hardcoreStats.collectAsState()
     val heatmapData by viewModel.heatmapData.collectAsState()
     val currentMonthLogs by viewModel.currentMonthStats.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
@@ -186,7 +187,11 @@ fun StatsScreen(
                 // item { TagFilterRow... } removed from here
 
                 item {
-                    SummaryCard(totalTime = totalTime, successRate = successRate)
+                    SummaryCard(
+                        totalTime = totalTime, 
+                        successRate = successRate,
+                        hardcoreCount = hardcoreCount
+                    )
                 }
 
             item {
@@ -296,7 +301,7 @@ fun StatsTopBar(
 }
 
 @Composable
-fun SummaryCard(totalTime: String, successRate: String) {
+fun SummaryCard(totalTime: String, successRate: Int, hardcoreCount: Int?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -304,27 +309,85 @@ fun SummaryCard(totalTime: String, successRate: String) {
             .background(SurfaceDark)
             .padding(20.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        // Total Focus
+        Column(horizontalAlignment = Alignment.Start) {
             Text(
                 stringResource(R.string.stats_summary_total_focus),
                 color = TextSecondary,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(totalTime, color = FireOrange, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            Text(totalTime, color = FireOrange, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        // Divider
+        Box(
+            modifier = Modifier
+                .width(1.dp)
+                .height(32.dp)
+                .background(TextSecondary.copy(alpha = 0.2f))
+        )
 
-        Column(horizontalAlignment = Alignment.End) {
+        // Success Rate
+        val successColor = if (successRate == 100) {
+            FireOrange
+        } else {
+            // Interpolate between TextSecondary (Gray) and FireOrange
+            // Simple approach: standard White/Gray for lower, Orange tint for higher
+            // Or just Gray -> White -> Orange. 
+            // User requested: "Lower -> Faint/Gray, 100% -> Orange"
+            // Let's keep it simple: < 50% Gray, 50-99% White, 100% Orange for now, 
+            // OR use Color Utils to blend. Since we don't have lerp readily available without setup,
+            // let's use weighted steps.
+             when {
+                successRate == 100 -> FireOrange
+                successRate >= 80 -> Color(0xFFFFCC80) // Pale Orange
+                successRate >= 50 -> White
+                else -> TextSecondary
+            }
+        }
+        
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 stringResource(R.string.stats_summary_success_rate),
                 color = TextSecondary,
                 fontSize = 12.sp,
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(successRate, color = White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("$successRate%", color = successColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        }
+
+        if (hardcoreCount != null) {
+            // Divider
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(32.dp)
+                    .background(TextSecondary.copy(alpha = 0.2f))
+            )
+
+            // Hardcore Success
+            // Color Logic: More attempts -> Redder
+            val hardcoreColor = when {
+                hardcoreCount >= 20 -> Color(0xFFD32F2F) // Red (Level 5)
+                hardcoreCount >= 10 -> Color(0xFFFF7043) // Deep Orange (Level 4)
+                hardcoreCount >= 5 -> Color(0xFFFFB74D) // Soft Orange (Level 3)
+                hardcoreCount >= 3 -> Color(0xFFFFCC80) // Pale Orange (Level 2)
+                else -> Color(0xFFFFF59D) // Pale Yellow (Level 1)
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    stringResource(R.string.stats_summary_hardcore_success),
+                    color = TextSecondary,
+                    fontSize = 12.sp,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                // Icon removed, Text Centered
+                Text("$hardcoreCount", color = hardcoreColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
@@ -452,8 +515,25 @@ fun HeatmapCell(date: LocalDate, stats: DailyStats?, isSelected: Boolean, onClic
 
 @Composable
 fun LogItemCard(log: StudyLog) {
-    val date = Instant.ofEpochMilli(log.date).atZone(ZoneId.systemDefault())
-    val formatter = DateTimeFormatter.ofPattern("MMM dd, HH:mm")
+    val endTime = Instant.ofEpochMilli(log.date).atZone(ZoneId.systemDefault())
+    val startTime = endTime.minusSeconds(log.durationSeconds.toLong())
+    
+    val datePattern = stringResource(R.string.stats_log_date_format)
+    val timePattern = stringResource(R.string.stats_log_time_format)
+    
+    val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
+    val timeFormatter = DateTimeFormatter.ofPattern(timePattern)
+
+    val startDateStr = startTime.format(dateFormatter)
+    val endDateStr = endTime.format(dateFormatter)
+    val startTimeStr = startTime.format(timeFormatter)
+    val endTimeStr = endTime.format(timeFormatter)
+    
+    val timeDisplay = if (startDateStr == endDateStr) {
+        "$startDateStr $startTimeStr - $endTimeStr"
+    } else {
+        "$startDateStr $startTimeStr - $endDateStr $endTimeStr"
+    }
 
     Row(
         modifier = Modifier
@@ -475,22 +555,31 @@ fun LogItemCard(log: StudyLog) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(date.format(formatter), color = TextSecondary, fontSize = 12.sp)
+            Text(timeDisplay, color = TextSecondary, fontSize = 12.sp)
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "+ ${log.earnedCoin}",
-                color = FireOrange,
-                fontWeight = FontWeight.Bold,
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Icon(
-                Icons.Rounded.LocalFireDepartment,
-                contentDescription = null,
-                tint = FireOrange,
-                modifier = Modifier.size(14.dp),
-            )
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(SurfaceHighlight.copy(alpha = 0.5f))
+                .padding(horizontal = 10.dp, vertical = 5.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Rounded.LocalFireDepartment,
+                    contentDescription = null,
+                    tint = FireOrange,
+                    modifier = Modifier.size(14.dp),
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "+${log.earnedCoin}",
+                    color = FireOrange,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
         }
     }
 }

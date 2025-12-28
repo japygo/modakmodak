@@ -50,10 +50,13 @@
     <string name="stats_logs_title">Logs</string>
     <string name="stats_summary_total_focus">Total Focus</string>
     <string name="stats_summary_success_rate">Success Rate</string>
+    <string name="stats_summary_hardcore_success">Hardcore Success</string>
     <string name="stats_date_format">MMMM yyyy</string>
     <string name="stats_log_default_title">Focus</string>
     <string name="stats_log_given_up_suffix"> (Given Up)</string>
-    <string name="stats_log_empty">No recent study logs.</string>
+    <string name="stats_log_empty">No study records for this month.</string>
+    <string name="stats_log_date_format">MMM dd</string>
+    <string name="stats_log_time_format">HH:mm</string>
     <string name="filter_all">All</string>
 
     <!-- Weekdays -->

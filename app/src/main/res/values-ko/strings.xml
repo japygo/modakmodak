@@ -50,10 +50,13 @@
     <string name="stats_logs_title">기록</string>
     <string name="stats_summary_total_focus">총 집중 시간</string>
     <string name="stats_summary_success_rate">성공률</string>
+    <string name="stats_summary_hardcore_success">하드코어 성공</string>
     <string name="stats_date_format">yyyy년 M월</string>
     <string name="stats_log_default_title">집중</string>
     <string name="stats_log_given_up_suffix"> (중단함)</string>
-    <string name="stats_log_empty">최근 학습 기록이 없습니다.</string>
+    <string name="stats_log_empty">이번 달 학습 기록이 없습니다.</string>
+    <string name="stats_log_date_format">MM.dd</string>
+    <string name="stats_log_time_format">HH:mm</string>
     <string name="filter_all">전체</string>
 
     <!-- Weekdays -->

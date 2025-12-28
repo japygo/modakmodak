@@ -133,13 +133,21 @@ class StatsViewModel(
 
     val monthSuccessRate = currentMonthStats.map { logs ->
         if (logs.isEmpty()) {
-            "0%"
+            0
         } else {
             val successCount = logs.count { it.isSuccess }
-            val rate = (successCount.toFloat() / logs.size) * 100
-            "${rate.toInt()}%"
+            ((successCount.toFloat() / logs.size) * 100).toInt()
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "0%")
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val hardcoreStats = currentMonthStats.map { logs ->
+        val hasAttempt = logs.any { it.isHardcoreMode }
+        if (hasAttempt) {
+            logs.count { it.isHardcoreMode && it.isSuccess }
+        } else {
+            null
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun previousMonth() {
         _currentMonth.value = _currentMonth.value.minusMonths(1)
