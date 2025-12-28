@@ -151,4 +151,18 @@ class StatsViewModel(
             _currentMonth.value = _currentMonth.value.plusMonths(1)
         }
     }
+
+    fun debugInjectLogs() {
+        viewModelScope.launch {
+            repository.debugSeedLogs()
+            loadLogs() // Reload logs after seeding
+        }
+    }
+
+    fun debugClearLogs() {
+        viewModelScope.launch {
+            repository.debugClearLogs()
+            loadLogs()
+        }
+    }
 }

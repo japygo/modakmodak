@@ -40,7 +40,7 @@ class SettingsRepository(private val context: Context) {
     val isScreenOnEnabled: Flow<Boolean> = dataStore.data.map { it[IS_SCREEN_ON_ENABLED] ?: true }
     val defaultTimerMinutes: Flow<Int> = dataStore.data.map { it[DEFAULT_TIMER_MINUTES] ?: 25 }
     val defaultTag: Flow<String> = dataStore.data.map {
-        it[DEFAULT_TAG] ?: if (Locale.getDefault().language == "ko") "#공부" else "#study"
+        it[DEFAULT_TAG] ?: if (android.content.res.Resources.getSystem().configuration.locales[0].language == "ko") "#공부" else "#study"
     }
     val isBreakEnabled: Flow<Boolean> = dataStore.data.map { it[IS_BREAK_ENABLED] ?: true }
     val breakDurationMinutes: Flow<Int> = dataStore.data.map { it[BREAK_DURATION_MINUTES] ?: 5 }
@@ -53,7 +53,7 @@ class SettingsRepository(private val context: Context) {
     val isBreakNotificationEnabled: Flow<Boolean> =
         dataStore.data.map { it[IS_BREAK_NOTIFICATION_ENABLED] ?: true }
     val appLanguage: Flow<String> = dataStore.data.map {
-        it[APP_LANGUAGE] ?: if (Locale.getDefault().language == "ko") "ko" else "en"
+        it[APP_LANGUAGE] ?: if (android.content.res.Resources.getSystem().configuration.locales[0].language == "ko") "ko" else "en"
     }
 
     suspend fun setBgmVolume(volume: Float) {
@@ -106,5 +106,9 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setAppLanguage(language: String) {
         dataStore.edit { it[APP_LANGUAGE] = language }
+    }
+
+    suspend fun clearData() {
+        dataStore.edit { it.clear() }
     }
 }

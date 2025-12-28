@@ -35,7 +35,7 @@ class SettingsViewModel(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            if (java.util.Locale.getDefault().language == "ko") "#공부" else "#study",
+            if (android.content.res.Resources.getSystem().configuration.locales[0].language == "ko") "#공부" else "#study",
         )
 
     val isBreakEnabled: StateFlow<Boolean> = settingsRepository.isBreakEnabled
@@ -53,7 +53,7 @@ class SettingsViewModel(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            if (java.util.Locale.getDefault().language == "ko") "ko" else "en",
+            if (android.content.res.Resources.getSystem().configuration.locales[0].language == "ko") "ko" else "en",
         )
 
     // Selection logic for default preset
@@ -179,9 +179,10 @@ class SettingsViewModel(
         }
     }
 
-    fun resetData() {
+    fun resetData(onComplete: () -> Unit = {}) {
         viewModelScope.launch {
             modakRepository.resetAllData()
+            onComplete()
         }
     }
 }

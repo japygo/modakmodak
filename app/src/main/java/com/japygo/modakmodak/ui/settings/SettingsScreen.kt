@@ -94,6 +94,7 @@ fun SettingsScreen(
     val isBreakNotificationEnabled by viewModel.isBreakNotificationEnabled.collectAsState()
     val isDailyReminderEnabled by viewModel.isDailyReminderEnabled.collectAsState()
     val appLanguage by viewModel.appLanguage.collectAsState()
+    val context = LocalContext.current
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showAddPresetDialog by remember { mutableStateOf(false) }
@@ -260,7 +261,19 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.resetData()
+                        viewModel.resetData {
+                            val currentLang = context.resources.configuration.locales[0].language
+                            val systemLang = android.content.res.Resources.getSystem().configuration.locales[0].language
+                            
+                            // If current language differs from system language, MainActivity will trigger restart (due to DataStore clear resetting to system default).
+                            // We only manually restart if MainActivity WON'T trigger (i.e., languages match).
+                            if (currentLang == systemLang) {
+                                val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                                intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                context.startActivity(intent)
+                                (context as? android.app.Activity)?.finish()
+                            }
+                        }
                         showDeleteDialog = false
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.Red),

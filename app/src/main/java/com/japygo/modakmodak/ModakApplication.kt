@@ -26,10 +26,11 @@ class ModakApplication : Application() {
             database.shopDao(),
             database.inventoryDao(),
             database.timerPresetDao(),
+            settingsRepository
         )
         // Ensure user exists
         CoroutineScope(Dispatchers.IO).launch {
-            repository.createUserIfNotExists(seedLogs = true)
+            repository.createUserIfNotExists(seedLogs = false)
         }
         
         // Schedule Notification Worker

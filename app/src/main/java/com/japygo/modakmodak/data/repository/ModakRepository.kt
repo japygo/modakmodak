@@ -20,28 +20,29 @@ class ModakRepository(
     private val studyLogDao: StudyLogDao,
     private val shopDao: ShopDao,
     private val inventoryDao: InventoryDao,
-    private val timerPresetDao: TimerPresetDao
+    private val timerPresetDao: TimerPresetDao,
+    private val settingsRepository: SettingsRepository
 ) {
     val userFlow: Flow<User?> = userDao.getUser()
     val shopItemsFlow: Flow<List<ShopItem>> = shopDao.getAllShopItems()
     val inventoryFlow: Flow<List<Inventory>> = inventoryDao.getAllInventory()
     val timerPresetsFlow: Flow<List<TimerPreset>> = timerPresetDao.getAllPresets()
 
-    suspend fun createUserIfNotExists(seedLogs: Boolean = true) {
+    suspend fun createUserIfNotExists(seedLogs: Boolean = false) {
         val user = userDao.getUser().firstOrNull()
         if (user == null) {
-            // Initial User for new players (with test coins for shop testing)
-            userDao.insertUser(User(currentCoin = 1000, fireLevel = 1, fireExp = 0))
+            // Initial User for new players (Clean Start)
+            userDao.insertUser(User(currentCoin = 0, fireLevel = 1, fireExp = 0))
         } else if (user.currentCoin < 100) {
-            // Add test coins to existing users for shop testing
-            userDao.insertUser(user.copy(currentCoin = user.currentCoin + 1000))
+            // Remove automatic coin injection for existing users
+            // userDao.insertUser(user.copy(currentCoin = user.currentCoin + 1000))
         }
         
         // Initialize/Update Shop Items to ensure latest icons/names
         shopDao.insertShopItems(InitialShopItems)
 
-        // Test data for 99+ verification
-        inventoryDao.insertInventory(Inventory("wood_twig", 100))
+        // Test data removed for release cleanliness
+        // inventoryDao.insertInventory(Inventory("wood_twig", 100))
 
         // Initialize Timer Presets if empty
         val presets = timerPresetDao.getAllPresets().firstOrNull()
@@ -54,7 +55,7 @@ class ModakRepository(
         if (seedLogs) {
             val logs = studyLogDao.getAllLogs().firstOrNull()
             if (logs.isNullOrEmpty()) {
-                seedDummyLogs()
+                debugSeedLogs()
             }
         }
         
@@ -62,7 +63,7 @@ class ModakRepository(
         checkPenalties()
     }
 
-    private suspend fun seedDummyLogs() {
+    suspend fun debugSeedLogs() {
         val now = System.currentTimeMillis()
         val oneDayMillis = 24 * 60 * 60 * 1000L
         val logs = mutableListOf<StudyLog>()
@@ -87,6 +88,10 @@ class ModakRepository(
         logs.add(StudyLog(date = now, durationSeconds = 600, isSuccess = false, earnedCoin = 0, sessionType = "focus", tag = "#Coding"))
 
         logs.forEach { studyLogDao.insertLog(it) }
+    }
+
+    suspend fun debugClearLogs() {
+        studyLogDao.deleteAll()
     }
 
     suspend fun addExp(amount: Int) {
@@ -373,6 +378,7 @@ class ModakRepository(
         studyLogDao.deleteAll()
         inventoryDao.deleteAll()
         timerPresetDao.deleteAll()
+        settingsRepository.clearData()
         // Re-initialize for fresh state, but do NOT seed logs so user can see empty state
         createUserIfNotExists(seedLogs = false)
     }

@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.japygo.modakmodak.BuildConfig
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.ui.components.ModakBottomBar
 import com.japygo.modakmodak.ui.components.ModakCharacter
@@ -226,6 +227,9 @@ fun HomeScreen(
                                 Button(onClick = { viewModel.debugAddExp(100) }) { Text("+100") }
                                 Button(onClick = { viewModel.debugAddExp(500) }) { Text("+500") }
                             }
+
+                            Text("Economy:", color = FireOrange, fontWeight = FontWeight.Bold)
+                            Button(onClick = { viewModel.debugAddCoins(1000) }) { Text("Add 1000 Modak") }
                             
                             Text("Time Travel (Verify Penalty):", color = FireOrange, fontWeight = FontWeight.Bold)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -302,7 +306,9 @@ fun HomeScreen(
                         .weight(1f)
                         .fillMaxWidth()
                         .pointerInput(Unit) {
-                            detectTapGestures(onLongPress = { showDebugDialog = true })
+                            if (BuildConfig.DEBUG) {
+                                detectTapGestures(onLongPress = { showDebugDialog = true })
+                            }
                         },
                     contentAlignment = Alignment.Center,
                 ) {

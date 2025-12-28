@@ -140,6 +140,12 @@ class HomeViewModel(
         }
     }
 
+    fun debugAddCoins(amount: Int) {
+        viewModelScope.launch {
+            repository.addCoins(amount)
+        }
+    }
+
     fun debugSetExp(exactExp: Int) {
         viewModelScope.launch {
             val currentUser = user.value ?: User()

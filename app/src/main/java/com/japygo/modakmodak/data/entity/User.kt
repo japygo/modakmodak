@@ -17,5 +17,5 @@ data class User(
     // New Fields for Continuous System
     val lastStudyDate: Long = 0, // Timestamp of last successful study session
     val unclaimedMilestones: String = "", // Comma-separated list of days (e.g. "3,7")
-    val enableDailyReminder: Boolean = false // User setting for 8 PM reminder
+    val enableDailyReminder: Boolean = true // User setting for 8 PM reminder
 )

@@ -2,6 +2,8 @@ package com.japygo.modakmodak.ui.stats
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +41,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
+import com.japygo.modakmodak.BuildConfig
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.data.entity.StudyLog
 import com.japygo.modakmodak.ui.components.ModakBottomBar
@@ -67,6 +79,64 @@ fun StatsScreen(
     val currentMonthLogs by viewModel.currentMonthStats.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
 
+    // Debug Dialog State
+    var showDebugDialog by remember { mutableStateOf(false) }
+
+    if (showDebugDialog) {
+        AlertDialog(
+            onDismissRequest = { showDebugDialog = false },
+            title = { Text("DEBUG: Stats Controller", color = White) },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Section: Data Management
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            "Data Management",
+                            color = FireOrange,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Button(
+                            onClick = { 
+                                viewModel.debugInjectLogs()
+                                showDebugDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = SurfaceHighlight
+                            )
+                        ) {
+                            Text("Add Test Logs (Rainbow)", color = White)
+                        }
+
+                        Button(
+                            onClick = { 
+                                viewModel.debugClearLogs()
+                                showDebugDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF3E2723) // Very Dark Red/Brown background
+                            )
+                        ) {
+                            Text("Clear All Logs", color = Color(0xFFFF5252)) // Red-ish text
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showDebugDialog = false }) { Text("Close") }
+            },
+            containerColor = SurfaceDark
+        )
+    }
+
     Scaffold(
         modifier = Modifier
             .statusBarsPadding()
@@ -77,6 +147,7 @@ fun StatsScreen(
                 month = currentMonth,
                 onPrev = { viewModel.previousMonth() },
                 onNext = { viewModel.nextMonth() },
+                onDebugTrigger = { showDebugDialog = true }
             )
         },
         bottomBar = { ModakBottomBar(navController, "stats") },
@@ -86,6 +157,7 @@ fun StatsScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+
             val availableTags by viewModel.availableTags.collectAsState()
             val selectedTags by viewModel.selectedTags.collectAsState()
             
@@ -161,7 +233,12 @@ fun StatsScreen(
 }
 
 @Composable
-fun StatsTopBar(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
+fun StatsTopBar(
+    month: YearMonth, 
+    onPrev: () -> Unit, 
+    onNext: () -> Unit,
+    onDebugTrigger: () -> Unit = {}
+) {
     val formatter = DateTimeFormatter.ofPattern(stringResource(R.string.stats_date_format))
     Row(
         modifier = Modifier
@@ -174,7 +251,17 @@ fun StatsTopBar(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
         IconButton(onClick = onPrev) {
             Icon(Icons.Rounded.ChevronLeft, contentDescription = "Prev", tint = TextSecondary)
         }
-        Text(month.format(formatter), color = White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = month.format(formatter), 
+            color = White, 
+            fontSize = 22.sp, 
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.pointerInput(Unit) {
+                if (BuildConfig.DEBUG) {
+                    detectTapGestures(onLongPress = { onDebugTrigger() })
+                }
+            }
+        )
         IconButton(onClick = onNext) {
             Icon(Icons.Rounded.ChevronRight, contentDescription = "Next", tint = TextSecondary)
         }
