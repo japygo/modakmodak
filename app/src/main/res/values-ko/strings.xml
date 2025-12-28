@@ -43,7 +43,7 @@
     <string name="focus_fail_msg_long">정말 대단한 집중력을 보여주셨어요. 너무 아쉬워하지 마세요.</string>
 
     <!-- Stats Screen -->
-    <string name="stats_heatmap_title">히트맵</string>
+
     <string name="stats_select_month_title">날짜 선택</string>
     <string name="stats_year">년</string>
     <string name="stats_month">월</string>

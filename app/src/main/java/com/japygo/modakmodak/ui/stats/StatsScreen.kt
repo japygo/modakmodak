@@ -195,13 +195,6 @@ fun StatsScreen(
                 }
 
             item {
-                Text(
-                    stringResource(R.string.stats_heatmap_title),
-                    color = White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
                 HeatmapCalendar(
                     month = currentMonth,
                     heatmapData = heatmapData,
@@ -413,14 +406,14 @@ fun HeatmapCalendar(
         // Weekday Headers
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             listOf(
-                R.string.day_mon, R.string.day_tue, R.string.day_wed,
-                R.string.day_thu, R.string.day_fri, R.string.day_sat, R.string.day_sun,
+                R.string.day_sun, R.string.day_mon, R.string.day_tue, R.string.day_wed,
+                R.string.day_thu, R.string.day_fri, R.string.day_sat,
             ).forEach { resId ->
                 Text(
                     stringResource(resId),
                     color = TextSecondary,
                     fontSize = 12.sp,
-                    modifier = Modifier.width(32.dp),
+                    modifier = Modifier.width(40.dp),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 )
             }
@@ -428,7 +421,7 @@ fun HeatmapCalendar(
         Spacer(modifier = Modifier.height(12.dp))
 
         val days = (1..daysInMonth).map { month.atDay(it) }
-        val offset = month.atDay(1).dayOfWeek.value - 1 // 0=Mon
+        val offset = month.atDay(1).dayOfWeek.value % 7 // 0=Sun
         val totalSlots = daysInMonth + offset
         val rows = (totalSlots + 6) / 7
 

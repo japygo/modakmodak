@@ -43,7 +43,7 @@
     <string name="focus_fail_msg_long">You showed amazing focus. Don\'t be too hard on yourself.</string>
 
     <!-- Stats Screen -->
-    <string name="stats_heatmap_title">Heatmap</string>
+
     <string name="stats_select_month_title">Select Date</string>
     <string name="stats_year">Year</string>
     <string name="stats_month">Month</string>
