@@ -39,6 +39,9 @@
 
     <!-- Stats Screen -->
     <string name="stats_heatmap_title">Heatmap</string>
+    <string name="stats_select_month_title">Select Date</string>
+    <string name="stats_year">Year</string>
+    <string name="stats_month">Month</string>
     <string name="stats_logs_title">Logs</string>
     <string name="stats_summary_total_focus">Total Focus</string>
     <string name="stats_summary_success_rate">Success Rate</string>

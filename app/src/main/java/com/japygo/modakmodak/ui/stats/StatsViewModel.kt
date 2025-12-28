@@ -165,4 +165,8 @@ class StatsViewModel(
             loadLogs()
         }
     }
+
+    fun setMonth(yearMonth: YearMonth) {
+        _currentMonth.value = yearMonth
+    }
 }

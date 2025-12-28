@@ -66,6 +66,14 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import com.japygo.modakmodak.ui.theme.FireOrange
+
 
 @Composable
 fun StatsScreen(
@@ -147,7 +155,8 @@ fun StatsScreen(
                 month = currentMonth,
                 onPrev = { viewModel.previousMonth() },
                 onNext = { viewModel.nextMonth() },
-                onDebugTrigger = { showDebugDialog = true }
+                onDebugTrigger = { showDebugDialog = true },
+                onMonthSelected = { viewModel.setMonth(it) }
             )
         },
         bottomBar = { ModakBottomBar(navController, "stats") },
@@ -237,8 +246,22 @@ fun StatsTopBar(
     month: YearMonth, 
     onPrev: () -> Unit, 
     onNext: () -> Unit,
-    onDebugTrigger: () -> Unit = {}
+    onDebugTrigger: () -> Unit = {},
+    onMonthSelected: (YearMonth) -> Unit
 ) {
+    var showMonthPicker by remember { mutableStateOf(false) }
+
+    if (showMonthPicker) {
+        MonthYearPickerDialog(
+            currentMonth = month,
+            onDismiss = { showMonthPicker = false },
+            onConfirm = { 
+                onMonthSelected(it)
+                showMonthPicker = false
+            }
+        )
+    }
+
     val formatter = DateTimeFormatter.ofPattern(stringResource(R.string.stats_date_format))
     Row(
         modifier = Modifier
@@ -256,11 +279,15 @@ fun StatsTopBar(
             color = White, 
             fontSize = 22.sp, 
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.pointerInput(Unit) {
-                if (BuildConfig.DEBUG) {
-                    detectTapGestures(onLongPress = { onDebugTrigger() })
+            modifier = Modifier
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { showMonthPicker = true },
+                        onLongPress = if (BuildConfig.DEBUG) { 
+                            { onDebugTrigger() } 
+                        } else null
+                    )
                 }
-            }
         )
         IconButton(onClick = onNext) {
             Icon(Icons.Rounded.ChevronRight, contentDescription = "Next", tint = TextSecondary)
@@ -527,5 +554,166 @@ fun TagFilterRow(
                 shape = RoundedCornerShape(20.dp)
             )
         }
+    }
+}
+
+@Composable
+fun MonthYearPickerDialog(
+    currentMonth: YearMonth,
+    onDismiss: () -> Unit,
+    onConfirm: (YearMonth) -> Unit,
+) {
+    var selectedYear by remember { mutableIntStateOf(currentMonth.year) }
+    var selectedMonth by remember { mutableIntStateOf(currentMonth.monthValue) }
+
+    // Year range: 2000 to Current Year
+    val now = YearMonth.now()
+    val currentYear = now.year
+    val startYear = 2000
+    val endYear = currentYear
+    val yearRange = startYear..endYear
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                stringResource(R.string.stats_select_month_title), 
+                color = White,
+                fontWeight = FontWeight.Bold
+            ) 
+        },
+        text = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // Year Picker
+                StatsWheelPicker(
+                    label = stringResource(R.string.stats_year),
+                    value = selectedYear,
+                    range = yearRange,
+                    isInfinite = false,
+                    onValueChange = { selectedYear = it },
+                    format = { String.format("%04d", it) } 
+                )
+                
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Month Picker
+                StatsWheelPicker(
+                    label = stringResource(R.string.stats_month),
+                    value = selectedMonth,
+                    range = 1..12,
+                    isInfinite = true,
+                    onValueChange = { selectedMonth = it },
+                    format = { String.format("%02d", it) }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                   val selected = YearMonth.of(selectedYear, selectedMonth)
+                   // Clamp to current month if future
+                   if (selected.isAfter(now)) {
+                       onConfirm(now)
+                   } else {
+                       onConfirm(selected)
+                   }
+                }
+            ) {
+                Text(stringResource(R.string.common_confirm), color = FireOrange)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.common_cancel), color = TextSecondary)
+            }
+        },
+        containerColor = SurfaceDark,
+        shape = RoundedCornerShape(24.dp),
+    )
+}
+
+
+@Composable
+fun StatsWheelPicker(
+    label: String,
+    value: Int,
+    range: IntRange,
+    isInfinite: Boolean = true,
+    onValueChange: (Int) -> Unit,
+    format: (Int) -> String = { it.toString() }
+) {
+    val itemsCount = range.last - range.first + 1
+    val totalCount = if (isInfinite) 1000 * itemsCount else itemsCount
+    val initialIndex = if (isInfinite) {
+        totalCount / 2 + (value - range.first)
+    } else {
+        value - range.first
+    }
+
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
+
+    val isScrolling = listState.isScrollInProgress
+    LaunchedEffect(isScrolling) {
+        if (!isScrolling) {
+            val selectedIndex = listState.firstVisibleItemIndex
+            val actualValue = range.first + (selectedIndex % itemsCount)
+            onValueChange(actualValue)
+
+            if (isInfinite && (selectedIndex < totalCount / 4 || selectedIndex > totalCount * 3 / 4)) {
+                listState.scrollToItem(totalCount / 2 + (actualValue - range.first))
+            }
+        }
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .height(120.dp)
+                .width(80.dp), // Slightly wider than time picker
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .background(SurfaceHighlight.copy(alpha = 0.3f), RoundedCornerShape(8.dp)),
+            )
+
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(vertical = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                items(totalCount) { index ->
+                    val num = range.first + (index % itemsCount)
+                    val isSelected = listState.firstVisibleItemIndex == index
+
+                    Box(
+                        modifier = Modifier
+                            .height(40.dp)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = format(num),
+                            color = if (isSelected) FireOrange else TextSecondary.copy(alpha = 0.5f),
+                            fontSize = if (isSelected) 24.sp else 18.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        )
+                    }
+                }
+            }
+        }
+        Text(
+            label,
+            color = TextSecondary,
+            fontSize = 11.sp,
+            modifier = Modifier.padding(top = 4.dp),
+        )
     }
 }

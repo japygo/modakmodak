@@ -39,6 +39,9 @@
 
     <!-- Stats Screen -->
     <string name="stats_heatmap_title">히트맵</string>
+    <string name="stats_select_month_title">날짜 선택</string>
+    <string name="stats_year">년</string>
+    <string name="stats_month">월</string>
     <string name="stats_logs_title">기록</string>
     <string name="stats_summary_total_focus">총 집중 시간</string>
     <string name="stats_summary_success_rate">성공률</string>
