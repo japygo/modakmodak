@@ -104,7 +104,10 @@ class BreakViewModel(
                     
                     // Fetch latest setting directly from repository to avoid StateFlow staleness in background
                     viewModelScope.launch {
-                        if (settingsRepository.isNotificationEnabled.first()) {
+                        val isMasterEnabled = settingsRepository.isNotificationEnabled.first()
+                        val isBreakEnabled = settingsRepository.isBreakNotificationEnabled.first()
+
+                        if (isMasterEnabled && isBreakEnabled) {
                             val lang = settingsRepository.appLanguage.first()
                             notificationHelper.showBreakFinishedNotification(lang)
                         }

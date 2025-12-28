@@ -94,7 +94,12 @@
     <string name="settings_volume_bgm">BGM 볼륨</string>
     <string name="settings_volume_sfx">SFX 볼륨</string>
     <string name="settings_toggle_vibration">진동</string>
+
     <string name="settings_toggle_notifications">앱 알림</string>
+    <string name="settings_toggle_daily_reminder">일일 학습 알림</string>
+    <string name="settings_toggle_study_notification">집중 완료 알림</string>
+    <string name="settings_toggle_break_notification">휴식 완료 알림</string>
+
     <string name="settings_section_focus">집중</string>
     <string name="settings_toggle_screen_on">화면 켜짐 유지</string>
     <string name="settings_section_break">휴식</string>
@@ -182,4 +187,19 @@
     <string name="break_msg_level5_3">세상에 단 하나뿐인 당신만의 길을 묵묵히 걷는 당신, 당신은 이미 영웅입니다.</string>
     <string name="break_msg_level5_4">이제 모든 걸 내려놓고 깊은 평화 속에 머무세요. 당신의 오늘은 완벽했습니다.</string>
 
+    <!-- Milestone Bonus -->
+    <string name="home_bonus_badge">보너스 받기!</string>
+    <string name="bonus_dialog_title">%1$d일 연속 달성!</string>
+    <string name="bonus_dialog_message">꾸준한 노력에 대한 보상입니다.</string>
+    <string name="bonus_dialog_claim">보너스 받기</string>
+    
+    <!-- Milestone Specific Messages -->
+    <string name="bonus_msg_3">시작이 반입니다! 작심삼일을 넘긴 당신, 대단해요.</string>
+    <string name="bonus_msg_7">일주일 동안 꾸준히! 습관의 불씨가 타오르고 있어요.</string>
+    <string name="bonus_msg_14">2주 달성! 이제 완전한 몰입의 단계로 접어들었습니다.</string>
+    <string name="bonus_msg_21">21일의 기적! 이제 습관이 몸에 배었습니다.</string>
+    <string name="bonus_msg_30">한 달 달성! 당신의 끈기는 정말 놀랍습니다.</string>
+    <string name="bonus_msg_50">50일의 여정, 꺼지지 않는 열정에 박수를 보냅니다.</string>
+    <string name="bonus_msg_100">100일의 금자탑! 당신은 진정한 몰입 마스터입니다.</string>
+    <string name="bonus_msg_365">1년의 기록, 당신의 성실함은 전설이 될 것입니다.</string>
 </resources>

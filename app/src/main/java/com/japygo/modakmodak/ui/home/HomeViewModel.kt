@@ -11,12 +11,15 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val repository: ModakRepository,
     private val settingsRepository: SettingsRepository,
+    private val notificationHelper: com.japygo.modakmodak.utils.NotificationHelper,
 ) : ViewModel() {
 
     val user: StateFlow<User?> = repository.userFlow
@@ -117,6 +120,19 @@ class HomeViewModel(
         }
     }
 
+    // Milestone & Streak
+    val unclaimedMilestones: StateFlow<List<Int>> = repository.userFlow
+        .map { user ->
+            user?.unclaimedMilestones?.split(",")?.filter { it.isNotEmpty() }?.map { it.toInt() } ?: emptyList()
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun claimMilestone(day: Int) {
+        viewModelScope.launch {
+            repository.claimMilestone(day)
+        }
+    }
+
     // DEBUG: Direct control for testing
     fun debugAddExp(amount: Int) {
         viewModelScope.launch {
@@ -137,5 +153,51 @@ class HomeViewModel(
             repository.addExp(exactExp - currentUser.fireExp)
         }
     }
+    
+    fun debugSetLastStudyDate(daysAgo: Int) {
+        viewModelScope.launch {
+            repository.debugSetLastStudyDate(daysAgo)
+        }
+    }
 
+    fun debugSetStreak(days: Int) {
+        viewModelScope.launch {
+            repository.debugSetStreak(days)
+        }
+    }
+
+    fun debugSimulateSession() {
+        viewModelScope.launch {
+            // Simulate a 25-minute successful session
+            repository.logSession(
+                duration = 25 * 60,
+                isSuccess = true,
+                earnedCoin = 25,
+                tag = "#Debug"
+            )
+        }
+    }
+
+    fun debugShowDailyReminder() {
+        viewModelScope.launch {
+            val user = repository.userFlow.firstOrNull()
+            val isMasterEnabled = settingsRepository.isNotificationEnabled.first()
+            val isDailyEnabled = user?.enableDailyReminder ?: false
+            
+            if (isMasterEnabled && isDailyEnabled) {
+                val lang = settingsRepository.appLanguage.first()
+                notificationHelper.showDailyReminder(lang)
+            }
+        }
+    }
+
+    fun debugShowComebackNotification(days: Int) {
+        viewModelScope.launch {
+            val isEnabled = settingsRepository.isNotificationEnabled.first()
+            if (isEnabled) {
+                val lang = settingsRepository.appLanguage.first()
+                notificationHelper.showComebackNotification(lang, days)
+            }
+        }
+    }
 }

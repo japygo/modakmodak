@@ -95,6 +95,10 @@
     <string name="settings_volume_sfx">SFX Volume</string>
     <string name="settings_toggle_vibration">Vibration</string>
     <string name="settings_toggle_notifications">App Notifications</string>
+    <string name="settings_toggle_daily_reminder">Daily Study Reminder</string>
+    <string name="settings_toggle_study_notification">Focus Complete</string>
+    <string name="settings_toggle_break_notification">Break Complete</string>
+
     <string name="settings_section_focus">Focus</string>
     <string name="settings_toggle_screen_on">Keep Screen On</string>
     <string name="settings_section_break">Break</string>
@@ -182,4 +186,19 @@
     <string name="break_msg_level5_3">You, who silently walk your own unique path in the world, are already a hero.</string>
     <string name="break_msg_level5_4">Now let everything go and stay in deep peace. Your today was perfect.</string>
 
+    <!-- Milestone Bonus -->
+    <string name="home_bonus_badge">Get Bonus!</string>
+    <string name="bonus_dialog_title">%1$d Days Streak!</string>
+    <string name="bonus_dialog_message">A reward for your consistency.</string>
+    <string name="bonus_dialog_claim">Claim Bonus</string>
+
+    <!-- Milestone Specific Messages -->
+    <string name="bonus_msg_3">Great start! You\'ve overcome the first hurdle.</string>
+    <string name="bonus_msg_7">One week streak! The fire of habit is burning.</string>
+    <string name="bonus_msg_14">Two weeks! You are entering a state of deep flow.</string>
+    <string name="bonus_msg_21">21 Days! The habit is now part of you.</string>
+    <string name="bonus_msg_30">One Month! Your persistence is truly amazing.</string>
+    <string name="bonus_msg_50">50 Days journey. Applauding your undying passion.</string>
+    <string name="bonus_msg_100">100 Days! You are a true master of focus.</string>
+    <string name="bonus_msg_365">One Year. Your consistency is legendary.</string>
 </resources>

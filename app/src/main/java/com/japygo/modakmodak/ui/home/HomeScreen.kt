@@ -3,6 +3,7 @@ package com.japygo.modakmodak.ui.home
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.rememberScrollState
@@ -205,26 +206,64 @@ fun HomeScreen(
                 ) 
             },
             bottomBar = { ModakBottomBar(navController, "home") },
-        ) { innerPadding ->
+                ) { innerPadding ->
             var showDebugDialog by remember { mutableStateOf(false) }
+            val unclaimedMilestones by viewModel.unclaimedMilestones.collectAsState()
+            var showRewardDialog by remember { mutableStateOf(false) }
 
+            // Debug Dialog
             if (showDebugDialog) {
                 AlertDialog(
                     onDismissRequest = { showDebugDialog = false },
-                    title = { Text("DEBUG: EXP Control", color = Color.White) },
+                    title = { Text("DEBUG: Controller", color = Color.White) },
                     text = {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Current Level: $currentLevel", color = Color.Gray)
-                            Text("Current Exp: ${user?.fireExp}", color = Color.Gray)
+                            Text("Level: $currentLevel, Exp: ${user?.fireExp}", color = Color.Gray)
+                            Text("Streak: ${user?.streakDays}, Last: ${user?.lastStudyDate}", color = Color.Gray)
+                            
+                            Text("Exp Control:", color = FireOrange, fontWeight = FontWeight.Bold)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Button(onClick = { viewModel.debugAddExp(100) }) { Text("+100") }
                                 Button(onClick = { viewModel.debugAddExp(500) }) { Text("+500") }
-                                Button(onClick = { viewModel.debugAddExp(1000) }) { Text("+1k") }
                             }
+                            
+                            Text("Time Travel (Verify Penalty):", color = FireOrange, fontWeight = FontWeight.Bold)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Button(onClick = { viewModel.debugSetExp(0) }) { Text("Lv.1 (0)") }
-                                Button(onClick = { viewModel.debugSetExp(300) }) { Text("Lv.2") }
-                                Button(onClick = { viewModel.debugSetExp(1000) }) { Text("Lv.3") }
+                                Button(onClick = { viewModel.debugSetLastStudyDate(1) }) { Text("-1d") }
+                                Button(onClick = { viewModel.debugSetLastStudyDate(8) }) { Text("-8d (P)") }
+                                Button(onClick = { viewModel.debugSetLastStudyDate(30) }) { Text("-30d") }
+                            }
+
+
+
+                            Text("Set Streak (Pre-Bonus):", color = FireOrange, fontWeight = FontWeight.Bold)
+                            // Using FlowRow for multiple buttons
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Button(onClick = { viewModel.debugSetStreak(2) }) { Text("3 Days") }
+                                Button(onClick = { viewModel.debugSetStreak(6) }) { Text("7 Days") }
+                                Button(onClick = { viewModel.debugSetStreak(13) }) { Text("14 Days") }
+                                Button(onClick = { viewModel.debugSetStreak(20) }) { Text("21 Days") }
+                                Button(onClick = { viewModel.debugSetStreak(29) }) { Text("30 Days") }
+                                Button(onClick = { viewModel.debugSetStreak(49) }) { Text("50 Days") }
+                                Button(onClick = { viewModel.debugSetStreak(99) }) { Text("100 Days") }
+                                Button(onClick = { viewModel.debugSetStreak(364) }) { Text("365 Days") }
+                            }
+                            Button(
+                                onClick = { viewModel.debugSimulateSession() },
+                                colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
+                                modifier = Modifier.fillMaxWidth()
+                            ) { 
+                                Text("🔥 Simulate Session (Finish Now)") 
+                            }
+
+                            Text("Notification Test:", color = FireOrange, fontWeight = FontWeight.Bold)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Button(onClick = { viewModel.debugShowDailyReminder() }) { Text("Daily") }
+                                Button(onClick = { viewModel.debugShowComebackNotification(3) }) { Text("3d") }
+                                Button(onClick = { viewModel.debugShowComebackNotification(7) }) { Text("7d") }
                             }
                         }
                     },
@@ -232,6 +271,21 @@ fun HomeScreen(
                         TextButton(onClick = { showDebugDialog = false }) { Text("Close") }
                     },
                     containerColor = SurfaceDark
+                )
+            }
+
+            // Milestone Reward Dialog
+            if (showRewardDialog && unclaimedMilestones.isNotEmpty()) {
+                val milestoneToClaim = unclaimedMilestones.first()
+                MilestoneRewardDialog(
+                    streakDays = milestoneToClaim,
+                    onClaim = {
+                        viewModel.claimMilestone(milestoneToClaim)
+                        // If multiple, dialog stays open for next? Or closes? 
+                        // Let's close and let user click again if multiple.
+                        showRewardDialog = false 
+                    },
+                    onDismiss = { showRewardDialog = false }
                 )
             }
 
@@ -254,13 +308,47 @@ fun HomeScreen(
                 ) {
                     // Adjust padding/offset to place character exactly in the clearing
                     // The clearing is roughly in the center but slightly lower in visual weight
-                    Box(modifier = Modifier.padding(top = 100.dp)) {
+                    Box(
+                        modifier = Modifier.padding(top = 100.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         ModakGlowCharacter(
                             level = currentLevel,
                             exp = user?.fireExp ?: 0,
                             fireColor = fireColor,
                             lottieComposition = lottieComposition
                         )
+                        
+                        // Streak Text Removed as requested
+                    }
+                    
+                    // Milestone Badge (If available)
+                    if (unclaimedMilestones.isNotEmpty()) {
+                         Box(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = 24.dp)
+                                .clickable { showRewardDialog = true }
+                                .background(FireOrange.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+                                .border(1.dp, FireOrange, RoundedCornerShape(16.dp))
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Rounded.LocalFireDepartment,
+                                    contentDescription = null,
+                                    tint = FireOrange,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = stringResource(R.string.home_bonus_badge),
+                                    color = White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
                     }
                 }
 

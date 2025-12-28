@@ -31,5 +31,20 @@ class ModakApplication : Application() {
         CoroutineScope(Dispatchers.IO).launch {
             repository.createUserIfNotExists(seedLogs = true)
         }
+        
+        // Schedule Notification Worker
+        setupWorkManager()
+    }
+    
+    private fun setupWorkManager() {
+        val workRequest = androidx.work.PeriodicWorkRequestBuilder<com.japygo.modakmodak.worker.NotificationWorker>(
+            4, java.util.concurrent.TimeUnit.HOURS // Run checks every 4 hours
+        ).build()
+
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "ModakNotificationWorker",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP, // Keep existing if already scheduled
+            workRequest
+        )
     }
 }

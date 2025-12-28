@@ -73,8 +73,8 @@ fun ModakGlowCharacter(
     val levelProgress = remember(exp) { LevelUtils.getLevelProgress(exp) }
     val glowConfig = remember(currentLevel) { getGlowConfigForLevel(currentLevel) }
 
-    // Calculate scales: Stable base scale for character size growth
-    val baseScale = 0.5f + (currentLevel * 0.08f) + (levelProgress * 0.08f)
+    // Calculate scales using LevelUtils
+    val baseScale = LevelUtils.getCharacterScale(level, levelProgress)
     val finalScale = baseScale * extraScale
     
     // Total glow size fixed at its clear, steady state

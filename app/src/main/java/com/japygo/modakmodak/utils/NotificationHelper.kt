@@ -112,4 +112,45 @@ class NotificationHelper(private val context: Context) {
             // Permission not granted
         }
     }
+    fun showDailyReminder(languageCode: String) {
+        val title = if (languageCode == "ko") "오늘 학습을 잊지 않으셨나요? 🔥" else "Don't forget to study today! 🔥"
+        val text = if (languageCode == "ko") "모닥불이 기다리고 있어요. 잠깐이라도 들러주세요." else "Your Modak is waiting. Come by for a bit."
+        
+        showNotification(title, text)
+    }
+
+    fun showComebackNotification(languageCode: String, days: Int) {
+        val title = if (languageCode == "ko") "모닥불이 꺼져가고 있어요... 😢" else "The fire is fading... 😢"
+        val text = if (languageCode == "ko") 
+            "${days}일 동안 뵙지 못했네요. 다시 돌아오셔서 온기를 나눠주세요." 
+        else 
+            "We haven't seen you for $days days. Come back and share the warmth."
+
+        showNotification(title, text)
+    }
+
+    private fun showNotification(title: String, text: String) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        try {
+            with(NotificationManagerCompat.from(context)) {
+                notify(System.currentTimeMillis().toInt(), builder.build())
+            }
+        } catch (e: SecurityException) {
+            // Permission not granted
+        }
+    }
 }

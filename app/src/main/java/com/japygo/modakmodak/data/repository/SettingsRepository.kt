@@ -29,6 +29,8 @@ class SettingsRepository(private val context: Context) {
         val BREAK_DURATION_MINUTES = intPreferencesKey("break_duration_minutes")
         val IS_BREAK_TIMER_ENABLED = booleanPreferencesKey("is_break_timer_enabled")
         val IS_NOTIFICATION_ENABLED = booleanPreferencesKey("is_notification_enabled")
+        val IS_STUDY_NOTIFICATION_ENABLED = booleanPreferencesKey("is_study_notification_enabled")
+        val IS_BREAK_NOTIFICATION_ENABLED = booleanPreferencesKey("is_break_notification_enabled")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
     }
 
@@ -46,6 +48,10 @@ class SettingsRepository(private val context: Context) {
         dataStore.data.map { it[IS_BREAK_TIMER_ENABLED] ?: true }
     val isNotificationEnabled: Flow<Boolean> =
         dataStore.data.map { it[IS_NOTIFICATION_ENABLED] ?: true }
+    val isStudyNotificationEnabled: Flow<Boolean> =
+        dataStore.data.map { it[IS_STUDY_NOTIFICATION_ENABLED] ?: true }
+    val isBreakNotificationEnabled: Flow<Boolean> =
+        dataStore.data.map { it[IS_BREAK_NOTIFICATION_ENABLED] ?: true }
     val appLanguage: Flow<String> = dataStore.data.map {
         it[APP_LANGUAGE] ?: if (Locale.getDefault().language == "ko") "ko" else "en"
     }
@@ -88,6 +94,14 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setNotificationEnabled(enabled: Boolean) {
         dataStore.edit { it[IS_NOTIFICATION_ENABLED] = enabled }
+    }
+
+    suspend fun setStudyNotificationEnabled(enabled: Boolean) {
+        dataStore.edit { it[IS_STUDY_NOTIFICATION_ENABLED] = enabled }
+    }
+
+    suspend fun setBreakNotificationEnabled(enabled: Boolean) {
+        dataStore.edit { it[IS_BREAK_NOTIFICATION_ENABLED] = enabled }
     }
 
     suspend fun setAppLanguage(language: String) {

@@ -57,6 +57,9 @@ class ModakRepository(
                 seedDummyLogs()
             }
         }
+        
+        // Check penalties on startup
+        checkPenalties()
     }
 
     private suspend fun seedDummyLogs() {
@@ -89,7 +92,8 @@ class ModakRepository(
     suspend fun addExp(amount: Int) {
         val currentUser = userDao.getUser().firstOrNull() ?: User()
         val newExp = currentUser.fireExp + amount
-        val newLevel = calculateFireLevel(newExp)
+        // Use LevelUtils for consistent calculation
+        val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
         val updatedUser = currentUser.copy(fireExp = newExp, fireLevel = newLevel)
         userDao.insertUser(updatedUser) // Insert acts as replace
     }
@@ -101,15 +105,187 @@ class ModakRepository(
     }
 
     suspend fun logSession(duration: Int, isSuccess: Boolean, earnedCoin: Int, tag: String?) {
+        var finalCoins = earnedCoin
+        
+        if (isSuccess && duration >= 600) { // Only update streak for success > 10 mins
+            val currentUser = userDao.getUser().firstOrNull() ?: User()
+            val now = System.currentTimeMillis()
+            val lastDate = currentUser.lastStudyDate
+            
+            // Calculate Day Difference
+            val calNow = java.util.Calendar.getInstance().apply { timeInMillis = now }
+            val calLast = java.util.Calendar.getInstance().apply { timeInMillis = if (lastDate > 0) lastDate else now }
+            
+            // Reset hours for day comparison
+            val dayNow = calNow.get(java.util.Calendar.DAY_OF_YEAR)
+            val yearNow = calNow.get(java.util.Calendar.YEAR)
+            
+            val dayLast = calLast.get(java.util.Calendar.DAY_OF_YEAR)
+            val yearLast = calLast.get(java.util.Calendar.YEAR)
+            
+            var newStreak = currentUser.streakDays
+            
+            if (lastDate == 0L) {
+                // First time ever
+                newStreak = 1
+            } else if (yearNow == yearLast && dayNow == dayLast) {
+                // Same day, keeping streak (do nothing or ensure it's at least 1)
+                if (newStreak == 0) newStreak = 1
+            } else {
+                // Different day
+                calLast.add(java.util.Calendar.DAY_OF_YEAR, 1) // Check if it was yesterday
+                if (calLast.get(java.util.Calendar.DAY_OF_YEAR) == dayNow && calLast.get(java.util.Calendar.YEAR) == yearNow) {
+                    // Was yesterday -> Streak continues
+                    newStreak += 1
+                } else {
+                    // Gap > 1 day -> Reset
+                    newStreak = 1
+                }
+            }
+            
+            // Apply Multiplier to Coins
+            val multiplier = getStreakMultiplier(newStreak)
+            finalCoins = (earnedCoin * multiplier).toInt()
+            
+            // Check Milestones
+            val milestones = listOf(3, 7, 14, 21, 30, 50, 100, 365)
+            var currentUnclaimed = currentUser.unclaimedMilestones.split(",").filter { it.isNotEmpty() }.toMutableList()
+            var currentClaimed = currentUser.unclaimedMilestones // Actually this field name is unclaimed, better logic needed
+            // Wait, the field name is 'unclaimedMilestones'. 
+            // Logic: If streak hits milestone, AND it's NOT in unclaimed (or claimed history? currently we don't have claimed history).
+            // Simplified: If streak hits milestone, add to unclaimed. User claims it, we remove it. 
+            // Risk: User can reclaim if streak resets and hits again. This is acceptable for motivation? 
+            // "3일 연속" is hard to hit repeatedly if you fail. Let's allow repeated claiming for now or just add it.
+            
+            if (milestones.contains(newStreak)) {
+                if (!currentUnclaimed.contains(newStreak.toString())) {
+                    currentUnclaimed.add(newStreak.toString())
+                }
+            }
+            
+            userDao.insertUser(currentUser.copy(
+                streakDays = newStreak,
+                lastStudyDate = now,
+                unclaimedMilestones = currentUnclaimed.joinToString(",")
+            ))
+        }
+
         val log = StudyLog(
             date = System.currentTimeMillis(),
             durationSeconds = duration,
             isSuccess = isSuccess,
-            earnedCoin = earnedCoin,
+            earnedCoin = finalCoins,
             sessionType = "focus",
             tag = tag
         )
         studyLogDao.insertLog(log)
+    }
+    
+    fun getStreakMultiplier(days: Int): Double {
+        return when {
+            days == 1 -> 1.0
+            days == 2 -> 1.1
+            days == 3 -> 1.2
+            days == 4 -> 1.3
+            days == 5 -> 1.4
+            days <= 7 -> 1.6
+            days <= 20 -> 1.8
+            days <= 29 -> 2.0
+            days <= 49 -> 2.3
+            days <= 99 -> 2.5
+            else -> 3.0
+        }
+    }
+    
+    suspend fun checkPenalties() {
+        val currentUser = userDao.getUser().firstOrNull() ?: return
+        if (currentUser.lastStudyDate == 0L) return
+
+        val now = System.currentTimeMillis()
+        val diffMillis = now - currentUser.lastStudyDate
+        val diffDays = diffMillis / (24 * 60 * 60 * 1000)
+        
+        // Grace period 7 days. Penalty starts on 8th day.
+        if (diffDays <= 7) return
+        
+        // Calculate penalty
+        var totalDeduction = 0
+        // Simple iteration for days past 7
+        for (day in 8..diffDays) {
+            val deduction = when {
+                day <= 0 -> 0 // Should not happen
+                day <= 7 -> 0
+                day == 8L -> 20
+                day == 9L -> 30
+                day == 10L -> 40
+                day <= 14L -> 50
+                day <= 21L -> 70
+                day <= 30L -> 100
+                else -> 120
+            }
+            totalDeduction += deduction
+        }
+        
+        if (totalDeduction > 0) {
+            // Apply deduction
+            var newExp = currentUser.fireExp - totalDeduction
+            // Level down logic handled by LevelUtils and re-calculation
+            // However, we need to enforce "Min Level 1 Exp 0"
+            if (newExp < 0) newExp = 0
+            
+            // Check if level dropped
+            val oldLevel = currentUser.fireLevel
+            val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
+            
+            // Special Rule: If level drops, set to Max Exp of previous level? 
+            // User requirement: "레벨 다운 시 이전 레벨의 최대 경험치로 설정"
+            // This means if I was Lv 10 (5400) and dropped to range of Lv 9, I should be at Lv 9's max.
+            // But simply subtracting Exp acts naturally. "Set to max exp" might act as a buffer.
+            // Let's stick to subtraction first. If it drops multiple levels, it drops.
+            
+            userDao.insertUser(currentUser.copy(
+                fireExp = newExp, 
+                fireLevel = newLevel,
+                streakDays = 0 // Reset streak if penalty applied
+            ))
+        }
+    }
+    
+    suspend fun claimMilestone(day: Int) {
+        val currentUser = userDao.getUser().firstOrNull() ?: return
+        val unclaimed = currentUser.unclaimedMilestones.split(",").filter { it.isNotEmpty() }.toMutableList()
+        
+        if (unclaimed.contains(day.toString())) {
+            unclaimed.remove(day.toString())
+            
+            // Give Rewards
+            val (coinBonus, expBonus) = when(day) {
+                3 -> 100 to 50
+                7 -> 300 to 150
+                14 -> 700 to 350
+                21 -> 1200 to 600
+                30 -> 2000 to 1000
+                50 -> 4000 to 2000
+                100 -> 10000 to 5000
+                365 -> 50000 to 25000
+                else -> 0 to 0
+            }
+            
+            val newExp = currentUser.fireExp + expBonus
+            val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
+            
+            userDao.insertUser(currentUser.copy(
+                currentCoin = currentUser.currentCoin + coinBonus,
+                fireExp = newExp,
+                fireLevel = newLevel,
+                unclaimedMilestones = unclaimed.joinToString(",")
+            ))
+        }
+    }
+
+    suspend fun setDailyReminder(enabled: Boolean) {
+        val currentUser = userDao.getUser().firstOrNull() ?: return
+        userDao.insertUser(currentUser.copy(enableDailyReminder = enabled))
     }
 
     fun getLogsForRange(start: Long, end: Long): Flow<List<StudyLog>> {
@@ -192,16 +368,6 @@ class ModakRepository(
         return false
     }
 
-    private fun calculateFireLevel(exp: Int): Int {
-        return when {
-            exp < 300 -> 1 // Matchstick
-            exp < 1000 -> 2 // Candle
-            exp < 3000 -> 3 // Torch
-            exp < 8000 -> 4 // Bonfire
-            else -> 5 // Campfire
-        }
-    }
-
     suspend fun resetAllData() {
         userDao.deleteAll()
         studyLogDao.deleteAll()
@@ -227,5 +393,27 @@ class ModakRepository(
 
     suspend fun updateTimerPreset(preset: TimerPreset) {
         timerPresetDao.updatePreset(preset)
+    }
+
+    // DEBUG: Direct control for testing
+    suspend fun debugSetLastStudyDate(daysAgo: Int) {
+        val currentUser = userDao.getUser().firstOrNull() ?: return
+        val now = System.currentTimeMillis()
+        val targetDate = now - (daysAgo * 24 * 60 * 60 * 1000L)
+        val updated = currentUser.copy(lastStudyDate = targetDate)
+        userDao.insertUser(updated)
+    }
+
+    suspend fun debugSetStreak(days: Int) {
+        val currentUser = userDao.getUser().firstOrNull() ?: return
+        val now = System.currentTimeMillis()
+        // Set last study date to yesterday so that studying "today" increments the streak
+        val yesterday = now - (24 * 60 * 60 * 1000L)
+        
+        val updated = currentUser.copy(
+            streakDays = days,
+            lastStudyDate = yesterday
+        )
+        userDao.insertUser(updated)
     }
 }

@@ -7,6 +7,7 @@ import com.japygo.modakmodak.data.repository.ModakRepository
 import com.japygo.modakmodak.data.repository.SettingsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -46,8 +47,7 @@ class SettingsViewModel(
     val isBreakTimerEnabled: StateFlow<Boolean> = settingsRepository.isBreakTimerEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
-    val isNotificationEnabled: StateFlow<Boolean> = settingsRepository.isNotificationEnabled
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
 
     val appLanguage: StateFlow<String> = settingsRepository.appLanguage
         .stateIn(
@@ -114,9 +114,42 @@ class SettingsViewModel(
         }
     }
 
+    val isNotificationEnabled: StateFlow<Boolean> = settingsRepository.isNotificationEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val isStudyNotificationEnabled: StateFlow<Boolean> = settingsRepository.isStudyNotificationEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val isBreakNotificationEnabled: StateFlow<Boolean> = settingsRepository.isBreakNotificationEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val isDailyReminderEnabled: StateFlow<Boolean> = modakRepository.userFlow
+        .map { it?.enableDailyReminder ?: false }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    // ... (rest of vals)
+
     fun toggleNotification(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setNotificationEnabled(enabled)
+        }
+    }
+
+    fun toggleStudyNotification(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setStudyNotificationEnabled(enabled)
+        }
+    }
+
+    fun toggleBreakNotification(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setBreakNotificationEnabled(enabled)
+        }
+    }
+
+    fun toggleDailyReminder(enabled: Boolean) {
+        viewModelScope.launch {
+            modakRepository.setDailyReminder(enabled)
         }
     }
 

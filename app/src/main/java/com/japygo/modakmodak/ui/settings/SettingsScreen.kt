@@ -90,6 +90,9 @@ fun SettingsScreen(
     val isBreakEnabled by viewModel.isBreakEnabled.collectAsState()
     val breakDurationMinutes by viewModel.breakDurationMinutes.collectAsState()
     val isNotificationEnabled by viewModel.isNotificationEnabled.collectAsState()
+    val isStudyNotificationEnabled by viewModel.isStudyNotificationEnabled.collectAsState()
+    val isBreakNotificationEnabled by viewModel.isBreakNotificationEnabled.collectAsState()
+    val isDailyReminderEnabled by viewModel.isDailyReminderEnabled.collectAsState()
     val appLanguage by viewModel.appLanguage.collectAsState()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -183,6 +186,35 @@ fun SettingsScreen(
                     checked = isNotificationEnabled,
                     onCheckedChange = { viewModel.toggleNotification(it) },
                 )
+            }
+            
+            if (isNotificationEnabled) {
+                item {
+                    ToggleSettingItem(
+                        title = stringResource(R.string.settings_toggle_daily_reminder),
+                        icon = Icons.Default.Notifications,
+                        checked = isDailyReminderEnabled,
+                        onCheckedChange = { viewModel.toggleDailyReminder(it) },
+                    )
+                }
+
+                item {
+                    ToggleSettingItem(
+                        title = stringResource(R.string.settings_toggle_study_notification),
+                        icon = Icons.Default.Timer,
+                        checked = isStudyNotificationEnabled,
+                        onCheckedChange = { viewModel.toggleStudyNotification(it) },
+                    )
+                }
+
+                item {
+                    ToggleSettingItem(
+                        title = stringResource(R.string.settings_toggle_break_notification),
+                        icon = Icons.Default.Coffee,
+                        checked = isBreakNotificationEnabled,
+                        onCheckedChange = { viewModel.toggleBreakNotification(it) },
+                    )
+                }
             }
 
             // 5. Language

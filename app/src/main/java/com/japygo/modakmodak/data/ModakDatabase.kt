@@ -17,7 +17,7 @@ import com.japygo.modakmodak.data.entity.User
 
 @Database(
     entities = [User::class, StudyLog::class, Inventory::class, ShopItem::class, TimerPreset::class],
-    version = 5,
+    version = 6,
     exportSchema = false,
 )
 abstract class ModakDatabase : RoomDatabase() {

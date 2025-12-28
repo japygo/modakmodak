@@ -36,7 +36,11 @@ fun ModakNavGraph(navController: NavHostController = rememberNavController()) {
             val viewModel: HomeViewModel = viewModel(
                 factory = viewModelFactory {
                     initializer {
-                        HomeViewModel(repository, application.settingsRepository)
+                        HomeViewModel(
+                            repository,
+                            application.settingsRepository,
+                            application.notificationHelper
+                        )
                     }
                 },
             )
