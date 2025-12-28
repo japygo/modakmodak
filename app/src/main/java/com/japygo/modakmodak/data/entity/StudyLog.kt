@@ -12,4 +12,5 @@ data class StudyLog(
     val earnedCoin: Int,
     val sessionType: String, // "focus" or "break"
     val tag: String? = null, // e.g. "#Coding"
+    val isHardcoreMode: Boolean = false
 )

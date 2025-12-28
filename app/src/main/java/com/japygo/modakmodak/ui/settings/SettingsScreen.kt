@@ -32,6 +32,9 @@ import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.ScreenLockRotation
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Dangerous
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -93,6 +96,7 @@ fun SettingsScreen(
     val isStudyNotificationEnabled by viewModel.isStudyNotificationEnabled.collectAsState()
     val isBreakNotificationEnabled by viewModel.isBreakNotificationEnabled.collectAsState()
     val isDailyReminderEnabled by viewModel.isDailyReminderEnabled.collectAsState()
+    val isHardcoreModeEnabled by viewModel.isHardcoreModeEnabled.collectAsState()
     val appLanguage by viewModel.appLanguage.collectAsState()
     val context = LocalContext.current
 
@@ -101,6 +105,34 @@ fun SettingsScreen(
     var editingPreset by remember {
         mutableStateOf<com.japygo.modakmodak.data.entity.TimerPreset?>(
             null,
+        )
+    }
+    var showHardcoreDialog by remember { mutableStateOf(false) }
+    var pendingHardcoreState by remember { mutableStateOf(false) }
+
+    if (showHardcoreDialog) {
+        AlertDialog(
+            onDismissRequest = { showHardcoreDialog = false },
+            title = { Text(stringResource(R.string.settings_hardcore_dialog_title)) },
+            text = { Text(stringResource(R.string.settings_hardcore_dialog_text)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.toggleHardcoreMode(true)
+                        showHardcoreDialog = false
+                    },
+                ) {
+                    Text(stringResource(R.string.common_confirm), color = FireOrange)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showHardcoreDialog = false }) {
+                    Text(stringResource(R.string.common_cancel), color = TextSecondary)
+                }
+            },
+            containerColor = SurfaceDark,
+            titleContentColor = White,
+            textContentColor = TextSecondary,
         )
     }
 
@@ -150,8 +182,31 @@ fun SettingsScreen(
                 ToggleSettingItem(
                     title = stringResource(R.string.settings_toggle_screen_on),
                     icon = Icons.Default.ScreenLockRotation,
-                    checked = isScreenOnEnabled,
-                    onCheckedChange = { viewModel.toggleScreenOn(it) },
+                    checked = isScreenOnEnabled || isHardcoreModeEnabled, // Force checked visually if Hardcore
+                    onCheckedChange = { 
+                        if (!isHardcoreModeEnabled) {
+                            viewModel.toggleScreenOn(it) 
+                        }
+                        // If Hardcore is valid, ignore uncheck attempts or we could show a toast
+                    },
+                    isEnabled = !isHardcoreModeEnabled // Disable interaction if Hardcore is on
+                )
+            }
+
+            item {
+                ToggleSettingItem(
+                    title = stringResource(R.string.settings_toggle_hardcore),
+                    subtitle = null,
+                    icon = Icons.Default.Lock, 
+                    checked = isHardcoreModeEnabled,
+                    onCheckedChange = { 
+                        if (it) {
+                            showHardcoreDialog = true
+                        } else {
+                            viewModel.toggleHardcoreMode(false)
+                        }
+                    },
+                    iconTint = if (isHardcoreModeEnabled) FireOrange else TextSecondary
                 )
             }
 
@@ -193,7 +248,7 @@ fun SettingsScreen(
                 item {
                     ToggleSettingItem(
                         title = stringResource(R.string.settings_toggle_daily_reminder),
-                        icon = Icons.Default.Notifications,
+                        icon = Icons.Default.CalendarToday,
                         checked = isDailyReminderEnabled,
                         onCheckedChange = { viewModel.toggleDailyReminder(it) },
                     )
@@ -759,9 +814,12 @@ fun DurationSettingItem(
 @Composable
 fun ToggleSettingItem(
     title: String,
+    subtitle: String? = null,
     icon: ImageVector,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    iconTint: Color = TextSecondary,
+    isEnabled: Boolean = true
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = SurfaceDark),
@@ -774,24 +832,42 @@ fun ToggleSettingItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+             // ... content ...
+             Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = TextSecondary,
+                    tint = if (isEnabled) iconTint else iconTint.copy(alpha = 0.5f),
                     modifier = Modifier.size(20.dp),
                 )
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(title, color = White, fontSize = 16.sp)
+                Column {
+                    Text(title, color = if (isEnabled) White else White.copy(alpha = 0.5f), fontSize = 16.sp)
+                    if (subtitle != null) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            subtitle,
+                            color = if (isEnabled) TextSecondary else TextSecondary.copy(alpha = 0.5f),
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
             }
             Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
+                enabled = isEnabled,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = White,
                     checkedTrackColor = FireOrange,
                     uncheckedThumbColor = TextSecondary,
                     uncheckedTrackColor = SurfaceDark,
+                    disabledCheckedThumbColor = White.copy(alpha = 0.6f),
+                    disabledCheckedTrackColor = FireOrange.copy(alpha = 0.6f),
                 ),
             )
         }

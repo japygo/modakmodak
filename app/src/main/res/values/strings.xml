@@ -36,6 +36,11 @@
     <string name="focusing_text">Focusing...</string>
     <string name="focus_paused_text">Paused</string>
     <string name="focus_give_up_button">Hold for 3s to give up</string>
+    <string name="focus_fail_title">Focus Failed</string>
+    <string name="focus_fail_button_back">Go Back</string>
+    <string name="focus_fail_msg_short">A good start is half the battle. Let\'s go further next time.</string>
+    <string name="focus_fail_msg_medium">You were doing great. It\'s okay to take a breather.</string>
+    <string name="focus_fail_msg_long">You showed amazing focus. Don\'t be too hard on yourself.</string>
 
     <!-- Stats Screen -->
     <string name="stats_heatmap_title">Heatmap</string>
@@ -104,6 +109,10 @@
 
     <string name="settings_section_focus">Focus</string>
     <string name="settings_toggle_screen_on">Keep Screen On</string>
+    <string name="settings_toggle_hardcore">Hardcore Mode</string>
+    <string name="settings_hardcore_desc">Fail immediately on app exit. Earn greater rewards.</string>
+    <string name="settings_hardcore_dialog_title">Enable Hardcore Mode?</string>
+    <string name="settings_hardcore_dialog_text">If you leave the app, the timer will fail immediately. Instead, you earn significantly more Modak and Exp. Are you ready to focus completely?</string>
     <string name="settings_section_break">Break</string>
     <string name="settings_toggle_break_screen">Enable Break Screen</string>
     <string name="settings_break_duration">Break Duration</string>

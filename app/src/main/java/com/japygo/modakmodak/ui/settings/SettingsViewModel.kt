@@ -28,6 +28,9 @@ class SettingsViewModel(
     val isScreenOnEnabled: StateFlow<Boolean> = settingsRepository.isScreenOnEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val isHardcoreModeEnabled: StateFlow<Boolean> = settingsRepository.isHardcoreModeEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     val defaultTimerMinutes: StateFlow<Int> = settingsRepository.defaultTimerMinutes
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 25)
 
@@ -81,6 +84,16 @@ class SettingsViewModel(
     fun toggleScreenOn(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setScreenOnEnabled(enabled)
+        }
+    }
+
+    fun toggleHardcoreMode(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setHardcoreModeEnabled(enabled)
+            if (enabled) {
+                // Hardcore mode requires screen on to prevent accidental failures
+                settingsRepository.setScreenOnEnabled(true)
+            }
         }
     }
 

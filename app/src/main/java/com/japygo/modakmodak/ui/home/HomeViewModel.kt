@@ -179,7 +179,8 @@ class HomeViewModel(
                 duration = 25 * 60,
                 isSuccess = true,
                 earnedCoin = 25,
-                tag = "#Debug"
+                tag = "#Debug",
+                isHardcoreMode = false
             )
         }
     }

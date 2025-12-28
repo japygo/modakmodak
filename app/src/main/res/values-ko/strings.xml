@@ -36,6 +36,11 @@
     <string name="focusing_text">집중하는 중...</string>
     <string name="focus_paused_text">일시 정지됨</string>
     <string name="focus_give_up_button">3초간 눌러서 포기하기</string>
+    <string name="focus_fail_title">집중 실패</string>
+    <string name="focus_fail_button_back">돌아가기</string>
+    <string name="focus_fail_msg_short">시작이 반이라고 하잖아요. 다음에는 조금 더 오래 함께해요.</string>
+    <string name="focus_fail_msg_medium">충분히 잘하고 계셨어요. 잠시 쉬어가도 괜찮습니다.</string>
+    <string name="focus_fail_msg_long">정말 대단한 집중력을 보여주셨어요. 너무 아쉬워하지 마세요.</string>
 
     <!-- Stats Screen -->
     <string name="stats_heatmap_title">히트맵</string>
@@ -105,6 +110,10 @@
 
     <string name="settings_section_focus">집중</string>
     <string name="settings_toggle_screen_on">화면 켜짐 유지</string>
+    <string name="settings_toggle_hardcore">하드코어 모드</string>
+    <string name="settings_hardcore_desc">앱 이탈 시 즉시 실패. 더 큰 성공 보상 획득.</string>
+    <string name="settings_hardcore_dialog_title">하드코어 모드를 켜시겠습니까?</string>
+    <string name="settings_hardcore_dialog_text">앱을 벗어나면 즉시 실패 처리됩니다. 대신 성공 시 훨씬 더 많은 보상을 획득할 수 있습니다. 오로지 학습에만 집중하시겠습니까?</string>
     <string name="settings_section_break">휴식</string>
     <string name="settings_toggle_break_screen">휴식 화면 사용</string>
     <string name="settings_break_duration">휴식 시간</string>

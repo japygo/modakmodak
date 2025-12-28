@@ -109,79 +109,114 @@ class ModakRepository(
         userDao.insertUser(updatedUser)
     }
 
-    suspend fun logSession(duration: Int, isSuccess: Boolean, earnedCoin: Int, tag: String?) {
-        var finalCoins = earnedCoin
+    suspend fun logSession(duration: Int, isSuccess: Boolean, earnedCoin: Int, tag: String?, isHardcoreMode: Boolean) {
+        val currentUser = userDao.getUser().firstOrNull() ?: return
+        val now = System.currentTimeMillis()
         
-        if (isSuccess && duration >= 600) { // Only update streak for success > 10 mins
-            val currentUser = userDao.getUser().firstOrNull() ?: User()
-            val now = System.currentTimeMillis()
-            val lastDate = currentUser.lastStudyDate
+        var finalCoins = earnedCoin
+        var finalExp = 0
+
+        // Determine rewards based on Success/Failure
+        if (isSuccess) {
+            // Base Exp: 2 per minute
+            val durationMinutes = duration / 60
+            var expToAdd = durationMinutes * 2
             
-            // Calculate Day Difference
-            val calNow = java.util.Calendar.getInstance().apply { timeInMillis = now }
-            val calLast = java.util.Calendar.getInstance().apply { timeInMillis = if (lastDate > 0) lastDate else now }
-            
-            // Reset hours for day comparison
-            val dayNow = calNow.get(java.util.Calendar.DAY_OF_YEAR)
-            val yearNow = calNow.get(java.util.Calendar.YEAR)
-            
-            val dayLast = calLast.get(java.util.Calendar.DAY_OF_YEAR)
-            val yearLast = calLast.get(java.util.Calendar.YEAR)
-            
+            // 1. Initial Multiplier from Hardcore (Apply to Base Coins and Base Exp)
+            if (isHardcoreMode) {
+                // Hardcore Bonus: 1.5x (Ceil to ensure benefit even for short sessions)
+                finalCoins = kotlin.math.ceil(finalCoins * 1.5).toInt()
+                expToAdd = kotlin.math.ceil(expToAdd * 1.5).toInt()
+            }
+
+            // 2. Streak Logic (Only for significant sessions >= 10 mins)
             var newStreak = currentUser.streakDays
+            val lastStudyDate = currentUser.lastStudyDate
+            val diff = now - lastStudyDate
+            val oneDayMillis = 24 * 60 * 60 * 1000L
             
-            if (lastDate == 0L) {
-                // First time ever
-                newStreak = 1
-            } else if (yearNow == yearLast && dayNow == dayLast) {
-                // Same day, keeping streak (do nothing or ensure it's at least 1)
-                if (newStreak == 0) newStreak = 1
-            } else {
-                // Different day
-                calLast.add(java.util.Calendar.DAY_OF_YEAR, 1) // Check if it was yesterday
-                if (calLast.get(java.util.Calendar.DAY_OF_YEAR) == dayNow && calLast.get(java.util.Calendar.YEAR) == yearNow) {
-                    // Was yesterday -> Streak continues
-                    newStreak += 1
-                } else {
-                    // Gap > 1 day -> Reset
+            // Manage Streak
+            if (duration >= 600) {
+                 if (lastStudyDate == 0L) {
                     newStreak = 1
+                } else {
+                    val daysDiff = diff / oneDayMillis
+                    if (daysDiff == 1L) {
+                        newStreak++
+                    } else if (daysDiff > 1L) {
+                        newStreak = 1
+                    }
+                    // If 0 days (same day), streak stays same
                 }
-            }
-            
-            // Apply Multiplier to Coins
-            val multiplier = getStreakMultiplier(newStreak)
-            finalCoins = (earnedCoin * multiplier).toInt()
-            
-            // Check Milestones
-            val milestones = listOf(3, 7, 14, 21, 30, 50, 100, 365)
-            var currentUnclaimed = currentUser.unclaimedMilestones.split(",").filter { it.isNotEmpty() }.toMutableList()
-            var currentClaimed = currentUser.unclaimedMilestones // Actually this field name is unclaimed, better logic needed
-            // Wait, the field name is 'unclaimedMilestones'. 
-            // Logic: If streak hits milestone, AND it's NOT in unclaimed (or claimed history? currently we don't have claimed history).
-            // Simplified: If streak hits milestone, add to unclaimed. User claims it, we remove it. 
-            // Risk: User can reclaim if streak resets and hits again. This is acceptable for motivation? 
-            // "3일 연속" is hard to hit repeatedly if you fail. Let's allow repeated claiming for now or just add it.
-            
-            if (milestones.contains(newStreak)) {
-                if (!currentUnclaimed.contains(newStreak.toString())) {
-                    currentUnclaimed.add(newStreak.toString())
+                
+                // Apply Streak Multiplier (Only affects Coins, usually)
+                val streakMultiplier = getStreakMultiplier(newStreak)
+                finalCoins = (finalCoins * streakMultiplier).toInt()
+                
+                // Update Milestones
+                val milestones = listOf(3, 7, 14, 21, 30, 50, 100, 365)
+                val currentUnclaimed = currentUser.unclaimedMilestones.split(",").filter { it.isNotEmpty() }.toMutableList()
+                
+                if (milestones.contains(newStreak)) {
+                    if (!currentUnclaimed.contains(newStreak.toString())) {
+                        currentUnclaimed.add(newStreak.toString())
+                    }
                 }
+                
+                // Update User for Streak Case
+                finalExp = expToAdd
+                val newExp = currentUser.fireExp + finalExp
+                val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
+
+                userDao.insertUser(currentUser.copy(
+                    streakDays = newStreak,
+                    lastStudyDate = now,
+                    unclaimedMilestones = currentUnclaimed.joinToString(","),
+                    currentCoin = currentUser.currentCoin + finalCoins,
+                    fireExp = newExp,
+                    fireLevel = newLevel
+                ))
+            } else {
+                // Short Session (< 10 mins): Success but no streak update
+                // Still give the coins and exp (as calculated with Hardcore bonus if applicable)
+                finalExp = expToAdd
+                val newExp = currentUser.fireExp + finalExp
+                val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
+                
+                userDao.insertUser(currentUser.copy(
+                    currentCoin = currentUser.currentCoin + finalCoins,
+                    fireExp = newExp,
+                    fireLevel = newLevel
+                    // lastStudyDate NOT updated for short sessions? 
+                    // Usually "Short sessions don't count for streak", 
+                    // but do they count as "Daily Study"? 
+                    // Let's keep lastStudyDate update ONLY for meaningful sessions to prevent spamming 1min sessions to keep streak.
+                ))
             }
-            
-            userDao.insertUser(currentUser.copy(
-                streakDays = newStreak,
-                lastStudyDate = now,
-                unclaimedMilestones = currentUnclaimed.joinToString(",")
-            ))
+        } else {
+            // Failure logic
+            // Assuming Hardcore Failure = 0 coins or just normal failure coins?
+            // User said "Hardcore ON + Fail" -> "Immediate Fail".
+            // Usually failure gives time-based consolation coins (no multiplier).
+            if (duration > 0) {
+                 val durationMinutes = duration / 60
+                 finalCoins = durationMinutes
+                 userDao.insertUser(currentUser.copy(
+                     currentCoin = currentUser.currentCoin + finalCoins
+                 ))
+            } else {
+                finalCoins = 0
+            }
         }
 
         val log = StudyLog(
-            date = System.currentTimeMillis(),
+            date = now,
             durationSeconds = duration,
             isSuccess = isSuccess,
             earnedCoin = finalCoins,
             sessionType = "focus",
-            tag = tag
+            tag = tag,
+            isHardcoreMode = isHardcoreMode
         )
         studyLogDao.insertLog(log)
     }

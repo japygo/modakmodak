@@ -15,6 +15,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+enum class FailureReason {
+    NONE,
+    MANUAL,
+    BACKGROUND
+}
+
 class FocusViewModel(
     private val repository: ModakRepository,
     private val settingsRepository: SettingsRepository,
@@ -30,6 +36,9 @@ class FocusViewModel(
     val isScreenOnEnabled: StateFlow<Boolean> = settingsRepository.isScreenOnEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val isHardcoreModeEnabled: StateFlow<Boolean> = settingsRepository.isHardcoreModeEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     val user = repository.userFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
@@ -43,22 +52,36 @@ class FocusViewModel(
     private val _sessionState = MutableStateFlow(0)
     val sessionState: StateFlow<Int> = _sessionState.asStateFlow()
 
+    private val _failureReason = MutableStateFlow(FailureReason.NONE)
+    val failureReason: StateFlow<FailureReason> = _failureReason.asStateFlow()
+
     private var timer: CountDownTimer? = null
     private val _initialDuration = MutableStateFlow(1) // Avoid divide by zero
     val initialDuration: StateFlow<Int> = _initialDuration.asStateFlow()
 
     private var currentTag: String? = null
 
+    private val _isPaused = MutableStateFlow(false)
+    val isPaused: StateFlow<Boolean> = _isPaused.asStateFlow()
+
+    private var sessionHardcoreMode = false
+
     fun startTimer(durationMinutes: Int = 25, tag: String? = null) {
-        _isFocusing.value = true
-        _sessionState.value = 1
-        currentTag = tag
-        val totalSeconds = durationMinutes * 60
-        _initialDuration.value = totalSeconds
-        _timeLeft.value = totalSeconds
+        viewModelScope.launch {
+            sessionHardcoreMode = settingsRepository.isHardcoreModeEnabled.first()
+            _isFocusing.value = true
+            _isPaused.value = false
+            _sessionState.value = 1
+            currentTag = tag
+            val totalSeconds = durationMinutes * 60
+            _initialDuration.value = totalSeconds
+            _timeLeft.value = totalSeconds
+            startCountDown(totalSeconds * 1000L)
+        }
+    }
 
-        val durationMillis = durationMinutes * 60 * 1000L
-
+    private fun startCountDown(durationMillis: Long) {
+        timer?.cancel()
         timer = object : CountDownTimer(durationMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 _timeLeft.value = (millisUntilFinished / 1000).toInt()
@@ -84,11 +107,45 @@ class FocusViewModel(
         }.start()
     }
 
-    fun stopTimer() {
+    fun pauseTimer() {
+        if (_isFocusing.value && !_isPaused.value) {
+            timer?.cancel()
+            _isPaused.value = true
+        }
+    }
+
+    fun resumeTimer() {
+        if (_isFocusing.value && _isPaused.value) {
+            startCountDown(_timeLeft.value * 1000L)
+            _isPaused.value = false
+        }
+    }
+
+    fun onAppBackgrounded() {
+        if (_isFocusing.value && _sessionState.value == 1) {
+            if (sessionHardcoreMode) {
+                // Hardcore Mode: Immediate Fail
+                stopTimer(FailureReason.BACKGROUND) 
+                // stopTimer sets sessionState to 3 (Failed)
+            } else {
+                // Normal Mode: Pause
+                pauseTimer()
+            }
+        }
+    }
+
+    fun onAppForegrounded() {
+        // Normal Mode: Logic handled by user interaction (Resume Button)
+        // Hardcore Mode: If failed, state is 3, UI shows Fail Screen.
+    }
+
+    fun stopTimer(reason: FailureReason = FailureReason.MANUAL) {
         val elapsed = _initialDuration.value - _timeLeft.value
         timer?.cancel()
         _isFocusing.value = false
+        _isPaused.value = false
         _sessionState.value = 3 // Failed (Given up)
+        _failureReason.value = reason
 
         // 최소 1초 이상 집중했을 때만 기록
         if (elapsed > 0) {
@@ -101,9 +158,8 @@ class FocusViewModel(
             val durationMinutes = durationSeconds / 60
             // 실패 시에도 집중한 1분당 1코인 지급 (사용자 요청 반영)
             val coins = durationMinutes
-            repository.addCoins(coins)
-            if (success) repository.addExp(durationMinutes * 2)
-            repository.logSession(durationSeconds, success, coins, currentTag)
+            // Repository now handles Coin/Exp addition based on Hardcore Mode
+            repository.logSession(durationSeconds, success, coins, currentTag, sessionHardcoreMode)
         }
     }
 

@@ -10,6 +10,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -56,6 +58,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.ui.components.ModakCharacter
@@ -78,12 +83,42 @@ fun FocusScreen(
 ) {
     val timeLeft by viewModel.timeLeft.collectAsState()
     val isFocusing by viewModel.isFocusing.collectAsState()
+    val isPaused by viewModel.isPaused.collectAsState()
     val sessionState by viewModel.sessionState.collectAsState()
     val isBreakEnabled by viewModel.isBreakEnabled.collectAsState()
     val initialDuration by viewModel.initialDuration.collectAsState()
     val isScreenOnEnabled by viewModel.isScreenOnEnabled.collectAsState()
+    val isHardcoreModeEnabled by viewModel.isHardcoreModeEnabled.collectAsState() // Note: This is Flow from VM, but session might have fixed mode. 
+    // Ideally VM exposes "isSessionHardcore". But for now assume settings flow is close enough or add specific flow.
+    // Let's rely on VM state if possible, but VM didn't expose "sessionHardcoreMode" as public StateFlow.
+    // However, for the *Indicator*, the settings value is fine (usually won't change mid-session unless user hacks).
 
-    if (isScreenOnEnabled && isFocusing) {
+    val user by viewModel.user.collectAsState()
+    
+    // Parse user's fire color
+    val fireColor = remember(user?.fireColor) {
+        try {
+            val hex = user?.fireColor ?: "#FFFF9500"
+            Color(android.graphics.Color.parseColor(hex))
+        } catch (e: Exception) {
+            FireOrange
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                viewModel.onAppBackgrounded()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    if (isScreenOnEnabled && (isFocusing || isPaused)) {
         KeepScreenOn()
     }
 
@@ -185,20 +220,24 @@ fun FocusScreen(
                     modifier = Modifier
                         .size(320.dp)
                         .rotate(360f * (1f - progress)),
-                    color = FireOrange,
+                    color = fireColor,
                     trackColor = White.copy(alpha = 0.1f),
                     strokeWidth = 12.dp,
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
                 )
 
                 // Time Text inside Circle
-                Text(
-                    text = formatTime(timeLeft),
-                    color = White,
-                    fontSize = 80.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-2).sp,
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = formatTime(timeLeft),
+                        color = if (isPaused) White.copy(alpha = 0.5f) else White,
+                        fontSize = 80.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-2).sp,
+                    )
+                    
+
+                }
             }
 
             // Bottom section for information and button
@@ -254,69 +293,148 @@ fun FocusScreen(
                 // Spacer to push button to bottom
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Give Up Button
-                var isHolding by remember { mutableStateOf(false) }
-                val progress by animateFloatAsState(
-                    targetValue = if (isHolding) 1f else 0f,
-                    animationSpec = androidx.compose.animation.core.tween(durationMillis = if (isHolding) 3000 else 300),
-                    label = "GiveUpProgress",
-                    finishedListener = {
-                        if (isHolding) {
-                            viewModel.stopTimer()
-                            navController.popBackStack()
-                        }
-                    },
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 48.dp)
-                        .height(56.dp)
-                        .clip(RoundedCornerShape(28.dp))
-                        .background(Color(0xFF2D2416))
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = {
-                                    isHolding = true
-                                    try {
-                                        awaitRelease()
-                                    } finally {
-                                        isHolding = false
-                                    }
-                                },
-                            )
-                        },
-                    contentAlignment = Alignment.CenterStart,
-                ) {
+                if (isPaused) {
+                    // Resume Button (Simple Click)
                     Box(
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(progress)
-                            .background(FireOrange.copy(alpha = 0.5f)),
+                            .fillMaxWidth()
+                            .padding(horizontal = 48.dp)
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(FireOrange)
+                            .clickable { viewModel.resumeTimer() },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            stringResource(R.string.common_continue), // "Continue" or "Resume"
+                            color = White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                    }
+                } else {
+                    // Give Up Button (Hold)
+                    var isHolding by remember { mutableStateOf(false) }
+                    val progress by animateFloatAsState(
+                        targetValue = if (isHolding) 1f else 0f,
+                        animationSpec = androidx.compose.animation.core.tween(durationMillis = if (isHolding) 3000 else 300),
+                        label = "GiveUpProgress",
+                        finishedListener = {
+                            if (isHolding) {
+                                viewModel.stopTimer()
+                                navController.popBackStack()
+                            }
+                        },
                     )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 48.dp)
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(Color(0xFF2D2416))
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onPress = {
+                                        isHolding = true
+                                        try {
+                                            awaitRelease()
+                                        } finally {
+                                            isHolding = false
+                                        }
+                                    },
+                                )
+                            },
+                        contentAlignment = Alignment.CenterStart,
                     ) {
-                        Icon(
-                            Icons.Default.TouchApp,
-                            contentDescription = null,
-                            tint = White.copy(alpha = 0.5f),
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(progress)
+                                .background(FireOrange.copy(alpha = 0.5f)),
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            stringResource(R.string.focus_give_up_button),
-                            color = White.copy(alpha = 0.8f),
-                            fontWeight = FontWeight.Bold,
-                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(
+                                Icons.Default.TouchApp,
+                                contentDescription = null,
+                                tint = White.copy(alpha = 0.5f),
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                stringResource(R.string.focus_give_up_button),
+                                color = White.copy(alpha = 0.8f),
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
                     }
                 }
                 
                 // Bottom margin - Increased to move button up
                 Spacer(modifier = Modifier.height(80.dp))
+            }
+        }
+
+    val failureReason by viewModel.failureReason.collectAsState()
+
+    // ... (rest of code)
+    
+        // Hardcore Failure Overlay
+        if (sessionState == 3 && isHardcoreModeEnabled && failureReason == FailureReason.BACKGROUND) {
+            val progress = if (initialDuration > 0) timeLeft.toFloat() / initialDuration.toFloat() else 0f
+            val elapsedRatio = 1f - progress
+            
+            val failMessage = when {
+                elapsedRatio < 0.3f -> stringResource(R.string.focus_fail_msg_short)
+                elapsedRatio < 0.7f -> stringResource(R.string.focus_fail_msg_medium)
+                else -> stringResource(R.string.focus_fail_msg_long)
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.85f))
+                    .clickable(enabled = false) {}, // Block interaction
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        stringResource(R.string.focus_fail_title),
+                        color = Color(0xFFFF3B30),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        failMessage,
+                        color = White.copy(alpha = 0.9f),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 40.dp),
+                        lineHeight = 24.sp
+                    )
+                    Spacer(modifier = Modifier.height(48.dp))
+                    
+                    // MainAction Button (Go Back) - Text Only Style
+                    TextButton(
+                        onClick = { navController.popBackStack() },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = FireOrange
+                        )
+                    ) {
+                        Text(
+                            stringResource(R.string.focus_fail_button_back), 
+                            fontSize = 18.sp, 
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
         }
     }

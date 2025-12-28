@@ -32,6 +32,7 @@ class SettingsRepository(private val context: Context) {
         val IS_STUDY_NOTIFICATION_ENABLED = booleanPreferencesKey("is_study_notification_enabled")
         val IS_BREAK_NOTIFICATION_ENABLED = booleanPreferencesKey("is_break_notification_enabled")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
+        val IS_HARDCORE_MODE_ENABLED = booleanPreferencesKey("is_hardcore_mode_enabled")
     }
 
     val bgmVolume: Flow<Float> = dataStore.data.map { it[BGM_VOLUME] ?: 0.5f }
@@ -55,6 +56,8 @@ class SettingsRepository(private val context: Context) {
     val appLanguage: Flow<String> = dataStore.data.map {
         it[APP_LANGUAGE] ?: if (android.content.res.Resources.getSystem().configuration.locales[0].language == "ko") "ko" else "en"
     }
+    val isHardcoreModeEnabled: Flow<Boolean> =
+        dataStore.data.map { it[IS_HARDCORE_MODE_ENABLED] ?: false }
 
     suspend fun setBgmVolume(volume: Float) {
         dataStore.edit { it[BGM_VOLUME] = volume }
@@ -106,6 +109,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setAppLanguage(language: String) {
         dataStore.edit { it[APP_LANGUAGE] = language }
+    }
+
+    suspend fun setHardcoreModeEnabled(enabled: Boolean) {
+        dataStore.edit { it[IS_HARDCORE_MODE_ENABLED] = enabled }
     }
 
     suspend fun clearData() {
