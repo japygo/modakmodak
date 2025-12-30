@@ -173,10 +173,11 @@ class FocusViewModel(
             // 실패 시에도 집중한 1분당 1코인 지급 (사용자 요청 반영)
             val coins = durationMinutes
             // Repository now handles Coin/Exp addition based on Hardcore Mode
+            // Repository now handles Coin/Exp addition based on Hardcore Mode
             val result = repository.logSession(durationSeconds, success, coins, currentTag, sessionHardcoreMode)
-            if (success) {
-                _sessionResult.value = result
-            }
+            
+            // Always set result to show earned coins even on failure
+            _sessionResult.value = result
         }
     }
 

@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -318,7 +319,7 @@ fun FocusScreen(
                         finishedListener = {
                             if (isHolding) {
                                 viewModel.stopTimer()
-                                navController.popBackStack()
+                                // navController.popBackStack() // Removed to show Failure Overlay
                             }
                         },
                     )
@@ -380,8 +381,8 @@ fun FocusScreen(
 
     // ... (rest of code)
     
-        // Hardcore Failure Overlay
-        if (sessionState == 3 && isHardcoreModeEnabled && failureReason == FailureReason.BACKGROUND) {
+        // Failure Overlay (Hardcore or Manual Give Up)
+        if (sessionState == 3) {
             val progress = if (initialDuration > 0) timeLeft.toFloat() / initialDuration.toFloat() else 0f
             val elapsedRatio = 1f - progress
             
@@ -415,6 +416,32 @@ fun FocusScreen(
                         modifier = Modifier.padding(horizontal = 40.dp),
                         lineHeight = 24.sp
                     )
+                    
+                    // Reward Info (Partial)
+                    if (sessionResult != null && sessionResult!!.earnedCoins > 0) {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .background(SurfaceHighlight.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 20.dp, vertical = 12.dp)
+                        ) {
+                             Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Rounded.LocalFireDepartment,
+                                contentDescription = null,
+                                tint = FireOrange,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                " +${sessionResult!!.earnedCoins}",
+                                color = White,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(48.dp))
                     
                     // MainAction Button (Go Back) - Text Only Style
