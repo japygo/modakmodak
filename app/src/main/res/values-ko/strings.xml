@@ -209,10 +209,10 @@
     <string name="break_msg_level5_4">이제 모든 걸 내려놓고 깊은 평화 속에 머무세요. 당신의 오늘은 완벽했습니다.</string>
 
     <!-- Milestone Bonus -->
-    <string name="home_bonus_badge">보너스 받기!</string>
+    <string name="home_bonus_badge">선물이 도착했어요!</string>
     <string name="bonus_dialog_title">%1$d일 연속 달성!</string>
-    <string name="bonus_dialog_message">꾸준한 노력에 대한 보상입니다.</string>
-    <string name="bonus_dialog_claim">보너스 받기</string>
+    <string name="bonus_dialog_message">그동안 열심히 하신 당신께 드리는 선물이에요.</string>
+    <string name="bonus_dialog_claim">선물 받기</string>
 
     <!-- Milestone Specific Messages -->
     <string name="bonus_msg_3">시작이 반입니다! 작심삼일을 넘긴 당신, 대단해요.</string>
@@ -223,4 +223,19 @@
     <string name="bonus_msg_50">50일의 여정, 꺼지지 않는 열정에 박수를 보냅니다.</string>
     <string name="bonus_msg_100">100일의 금자탑! 당신은 진정한 몰입 마스터입니다.</string>
     <string name="bonus_msg_365">1년의 기록, 당신의 성실함은 전설이 될 것입니다.</string>
+
+    <!-- Reward Screen -->
+    <string name="reward_title">집중 완료</string>
+    <string name="reward_streak">%1$d일 연속!</string>
+
+    <string-array name="reward_messages">
+        <item>참 잘하셨어요! 어제보다 더 성장한 당신이 보이네요.</item>
+        <item>작은 한 걸음이 모여 큰 변화를 만듭니다. 지금처럼만 계속해요!</item>
+        <item>당신의 집중력은 정말 대단해요. 스스로를 자랑스러워해도 돼요.</item>
+        <item>휴식도 성장의 일부랍니다. 편안하게 숨을 골라보세요.</item>
+        <item>정말 잘하고 계세요. 천천히, 하지만 꾸준히 나아가요.</item>
+        <item>꾸준함이 답이라는 걸 당신이 증명하고 있어요.</item>
+        <item>당신의 열정의 불꽃이 환하게 타오르고 있습니다.</item>
+        <item>스스로를 믿으세요. 당신에겐 충분한 힘이 있습니다.</item>
+    </string-array>
 </resources>

@@ -178,20 +178,16 @@ fun FocusScreen(
         )
     }
 
+    val sessionResult by viewModel.sessionResult.collectAsState()
+    
     // Handle Finish
-    LaunchedEffect(sessionState) {
-        if (sessionState == 2) {
-            // Success -> Go to Break Screen or Home based on settings
-            if (isBreakEnabled) {
-                // Get current set duration from NavGraph or ViewModel
-                val duration = navController.currentBackStackEntry?.arguments?.getString("duration")
-                    ?.toIntOrNull() ?: 25
-                navController.navigate("break/$duration") {
-                    popUpTo("home") // Clear focus screen from stack
-                }
-            } else {
-                navController.popBackStack()
-            }
+    LaunchedEffect(sessionState, sessionResult) {
+        if (sessionState == 2 && sessionResult != null) {
+            val result = sessionResult!!
+            val duration = navController.currentBackStackEntry?.arguments?.getString("duration")?.toIntOrNull() ?: 25
+            
+            // Use ViewModel to decide path (Break -> Reward OR Reward)
+            viewModel.navigateToNextParam(navController, result, duration)
         }
     }
 

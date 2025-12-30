@@ -129,9 +129,13 @@ fun ModakNavGraph(navController: NavHostController = rememberNavController()) {
             )
             SettingsScreen(navController = navController, viewModel = viewModel)
         }
-        composable("break/{studyDuration}") { backStackEntry ->
-            val studyDuration =
-                backStackEntry.arguments?.getString("studyDuration")?.toIntOrNull() ?: 0
+
+        composable("break/{studyDuration}/{earnedCoins}/{earnedExp}/{streakDays}") { backStackEntry ->
+            val studyDuration = backStackEntry.arguments?.getString("studyDuration")?.toIntOrNull() ?: 0
+            val earnedCoins = backStackEntry.arguments?.getString("earnedCoins")?.toIntOrNull() ?: 0
+            val earnedExp = backStackEntry.arguments?.getString("earnedExp")?.toIntOrNull() ?: 0
+            val streakDays = backStackEntry.arguments?.getString("streakDays")?.toIntOrNull() ?: 0
+            
             val context = LocalContext.current
             val application = context.applicationContext as ModakApplication
 
@@ -151,7 +155,46 @@ fun ModakNavGraph(navController: NavHostController = rememberNavController()) {
                 viewModel.setStudyDuration(studyDuration)
             }
 
-            BreakScreen(navController = navController, viewModel = viewModel)
+            BreakScreen(
+                navController = navController, 
+                viewModel = viewModel,
+                earnedCoins = earnedCoins,
+                earnedExp = earnedExp,
+                streakDays = streakDays
+            )
+        }
+        composable("reward/{earnedCoins}/{earnedExp}/{duration}/{streakDays}/{isBreakEnabled}") { backStackEntry ->
+            val earnedCoins = backStackEntry.arguments?.getString("earnedCoins")?.toIntOrNull() ?: 0
+            val earnedExp = backStackEntry.arguments?.getString("earnedExp")?.toIntOrNull() ?: 0
+            val duration = backStackEntry.arguments?.getString("duration")?.toIntOrNull() ?: 0
+            val streakDays = backStackEntry.arguments?.getString("streakDays")?.toIntOrNull() ?: 0
+            val isBreakEnabled = backStackEntry.arguments?.getString("isBreakEnabled")?.toBoolean() ?: true
+            
+            val context = LocalContext.current
+            val application = context.applicationContext as ModakApplication
+            val repository = application.repository
+            
+            val viewModel: FocusViewModel = viewModel(
+                factory = viewModelFactory {
+                    initializer {
+                        FocusViewModel(
+                            repository,
+                            application.settingsRepository,
+                            application.notificationHelper,
+                        )
+                    }
+                },
+            )
+            
+            com.japygo.modakmodak.ui.focus.RewardScreen(
+                navController = navController, 
+                viewModel = viewModel,
+                earnedCoins = earnedCoins,
+                earnedExp = earnedExp,
+                duration = duration,
+                streakDays = streakDays,
+                isBreakEnabled = isBreakEnabled
+            )
         }
     }
 }

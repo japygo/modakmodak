@@ -153,13 +153,30 @@ class FocusViewModel(
         }
     }
 
+    private val _sessionResult = MutableStateFlow<ModakRepository.SessionResult?>(null)
+    val sessionResult: StateFlow<ModakRepository.SessionResult?> = _sessionResult.asStateFlow()
+
+    fun navigateToNextParam(navController: androidx.navigation.NavController, result: ModakRepository.SessionResult, duration: Int) {
+        viewModelScope.launch {
+            val breakEnabled = isBreakEnabled.first()
+            // Always go to RewardScreen first, pass necessary params including isBreakEnabled
+            // Route format: reward/{earnedCoins}/{earnedExp}/{duration}/{streakDays}/{isBreakEnabled}
+            navController.navigate("reward/${result.earnedCoins}/${result.earnedExp}/$duration/${result.streakDays}/$breakEnabled") {
+                popUpTo("home") 
+            }
+        }
+    }
+
     private fun logSession(success: Boolean, durationSeconds: Int) {
         viewModelScope.launch {
             val durationMinutes = durationSeconds / 60
             // 실패 시에도 집중한 1분당 1코인 지급 (사용자 요청 반영)
             val coins = durationMinutes
             // Repository now handles Coin/Exp addition based on Hardcore Mode
-            repository.logSession(durationSeconds, success, coins, currentTag, sessionHardcoreMode)
+            val result = repository.logSession(durationSeconds, success, coins, currentTag, sessionHardcoreMode)
+            if (success) {
+                _sessionResult.value = result
+            }
         }
     }
 

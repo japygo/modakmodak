@@ -109,28 +109,43 @@ class ModakRepository(
         userDao.insertUser(updatedUser)
     }
 
-    suspend fun logSession(duration: Int, isSuccess: Boolean, earnedCoin: Int, tag: String?, isHardcoreMode: Boolean) {
-        val currentUser = userDao.getUser().firstOrNull() ?: return
+    data class SessionResult(
+        val earnedCoins: Int,
+        val earnedExp: Int,
+        val streakDays: Int,
+        val isLevelUp: Boolean,
+        val milestoneBonus: Int // 0 if none
+    )
+
+    suspend fun logSession(
+        duration: Int, 
+        isSuccess: Boolean, 
+        earnedCoin: Int, 
+        tag: String?, 
+        isHardcoreMode: Boolean
+    ): SessionResult {
+        val currentUser = userDao.getUser().firstOrNull() ?: return SessionResult(0, 0, 0, false, 0)
         val now = System.currentTimeMillis()
         
-        var finalCoins = earnedCoin
-        var finalExp = 0
+        // Base Calculation: 1 min = 1 Coin = 1 Exp
+        val durationMinutes = duration / 60
+        var baseAmount = durationMinutes
+        
+        var finalAmount = baseAmount
+        var milestoneBonus = 0
+        var isLevelUp = false
+        var newStreak = currentUser.streakDays
 
         // Determine rewards based on Success/Failure
         if (isSuccess) {
-            // Base Exp: 2 per minute
-            val durationMinutes = duration / 60
-            var expToAdd = durationMinutes * 2
             
-            // 1. Initial Multiplier from Hardcore (Apply to Base Coins and Base Exp)
+            // 1. Initial Multiplier from Hardcore (Apply to Base Amount)
             if (isHardcoreMode) {
-                // Hardcore Bonus: 1.5x (Ceil to ensure benefit even for short sessions)
-                finalCoins = kotlin.math.ceil(finalCoins * 1.5).toInt()
-                expToAdd = kotlin.math.ceil(expToAdd * 1.5).toInt()
+                // Hardcore Bonus: 1.5x (Ceil to ensure benefit)
+                finalAmount = kotlin.math.ceil(finalAmount * 1.5).toInt()
             }
 
             // 2. Streak Logic (Only for significant sessions >= 10 mins)
-            var newStreak = currentUser.streakDays
             val lastStudyDate = currentUser.lastStudyDate
             val diff = now - lastStudyDate
             val oneDayMillis = 24 * 60 * 60 * 1000L
@@ -149,9 +164,9 @@ class ModakRepository(
                     // If 0 days (same day), streak stays same
                 }
                 
-                // Apply Streak Multiplier (Only affects Coins, usually)
+                // Apply Streak Multiplier (Apply to BOTH Coin and Exp)
                 val streakMultiplier = getStreakMultiplier(newStreak)
-                finalCoins = (finalCoins * streakMultiplier).toInt()
+                finalAmount = (finalAmount * streakMultiplier).toInt()
                 
                 // Update Milestones
                 val milestones = listOf(3, 7, 14, 21, 30, 50, 100, 365)
@@ -160,52 +175,69 @@ class ModakRepository(
                 if (milestones.contains(newStreak)) {
                     if (!currentUnclaimed.contains(newStreak.toString())) {
                         currentUnclaimed.add(newStreak.toString())
+                        milestoneBonus = 1 // Flag for UI
                     }
                 }
                 
                 // Update User for Streak Case
-                finalExp = expToAdd
-                val newExp = currentUser.fireExp + finalExp
+                // Coin = Exp = finalAmount
+                val newExp = currentUser.fireExp + finalAmount
                 val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
+                
+                if (newLevel > currentUser.fireLevel) {
+                    isLevelUp = true
+                }
 
                 userDao.insertUser(currentUser.copy(
                     streakDays = newStreak,
                     lastStudyDate = now,
                     unclaimedMilestones = currentUnclaimed.joinToString(","),
-                    currentCoin = currentUser.currentCoin + finalCoins,
+                    currentCoin = currentUser.currentCoin + finalAmount,
                     fireExp = newExp,
                     fireLevel = newLevel
                 ))
             } else {
                 // Short Session (< 10 mins): Success but no streak update
-                // Still give the coins and exp (as calculated with Hardcore bonus if applicable)
-                finalExp = expToAdd
-                val newExp = currentUser.fireExp + finalExp
+                // Still get Hardcore bonus if active
+                val newExp = currentUser.fireExp + finalAmount
                 val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
                 
+                if (newLevel > currentUser.fireLevel) {
+                    isLevelUp = true
+                }
+                
                 userDao.insertUser(currentUser.copy(
-                    currentCoin = currentUser.currentCoin + finalCoins,
+                    currentCoin = currentUser.currentCoin + finalAmount,
                     fireExp = newExp,
                     fireLevel = newLevel
-                    // lastStudyDate NOT updated for short sessions? 
-                    // Usually "Short sessions don't count for streak", 
-                    // but do they count as "Daily Study"? 
-                    // Let's keep lastStudyDate update ONLY for meaningful sessions to prevent spamming 1min sessions to keep streak.
                 ))
             }
         } else {
             // Failure logic
-            // Assuming Hardcore Failure = 0 coins or just normal failure coins?
-            // User said "Hardcore ON + Fail" -> "Immediate Fail".
-            // Usually failure gives time-based consolation coins (no multiplier).
             if (duration > 0) {
-                 val durationMinutes = duration / 60
-                 finalCoins = durationMinutes
+                 // Fail: Get base amount (minutes) as Coins/Exp? 
+                 // User said "1 min 1 coin 1 exp... even when hardcore". 
+                 // Usually fail doesn't get multipliers? 
+                 // "failure... 1 min 1 coin" was previous requirement.
+                 // Let's keep it strictly 1 min = 1 unit for fail, NO multipliers.
+                 finalAmount = durationMinutes
+                 
+                 // User previously only got Coins on fail? 
+                 // "Fail... 1 coin per minute".
+                 // Now unified? Let's assume ONLY Coins on fail to prevent easy leveling?
+                 // Or Unified means Unified? "Coin and Exp should be obtained equally".
+                 // Let's give BOTH on fail if valid duration, but NO multipliers.
+                 
+                 val newExp = currentUser.fireExp + finalAmount
+                 val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
+                 
                  userDao.insertUser(currentUser.copy(
-                     currentCoin = currentUser.currentCoin + finalCoins
+                     currentCoin = currentUser.currentCoin + finalAmount,
+                     fireExp = newExp, // Grant Exp on fail too? If unified logic.
+                     fireLevel = newLevel
                  ))
             } else {
-                finalCoins = 0
+                finalAmount = 0
             }
         }
 
@@ -213,12 +245,20 @@ class ModakRepository(
             date = now,
             durationSeconds = duration,
             isSuccess = isSuccess,
-            earnedCoin = finalCoins,
+            earnedCoin = finalAmount,
             sessionType = "focus",
             tag = tag,
             isHardcoreMode = isHardcoreMode
         )
         studyLogDao.insertLog(log)
+        
+        return SessionResult(
+            earnedCoins = finalAmount,
+            earnedExp = finalAmount, // Exp = Coins
+            streakDays = newStreak,
+            isLevelUp = isLevelUp,
+            milestoneBonus = milestoneBonus
+        )
     }
     
     fun getStreakMultiplier(days: Int): Double {
@@ -298,24 +338,25 @@ class ModakRepository(
         if (unclaimed.contains(day.toString())) {
             unclaimed.remove(day.toString())
             
-            // Give Rewards
-            val (coinBonus, expBonus) = when(day) {
-                3 -> 100 to 50
-                7 -> 300 to 150
-                14 -> 700 to 350
-                21 -> 1200 to 600
-                30 -> 2000 to 1000
-                50 -> 4000 to 2000
-                100 -> 10000 to 5000
-                365 -> 50000 to 25000
-                else -> 0 to 0
+            // Give Rewards Equal for Coin and Exp
+            val rewardAmount = when(day) {
+                3 -> 100
+                7 -> 300
+                14 -> 700
+                21 -> 1200
+                30 -> 2000
+                50 -> 4000
+                100 -> 10000
+                365 -> 50000
+                else -> 0
             }
             
-            val newExp = currentUser.fireExp + expBonus
+            // Coin = Exp
+            val newExp = currentUser.fireExp + rewardAmount
             val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
             
             userDao.insertUser(currentUser.copy(
-                currentCoin = currentUser.currentCoin + coinBonus,
+                currentCoin = currentUser.currentCoin + rewardAmount,
                 fireExp = newExp,
                 fireLevel = newLevel,
                 unclaimedMilestones = unclaimed.joinToString(",")

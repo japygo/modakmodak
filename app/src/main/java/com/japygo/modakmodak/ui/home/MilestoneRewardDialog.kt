@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -35,6 +36,9 @@ import com.japygo.modakmodak.ui.theme.SurfaceDark
 import com.japygo.modakmodak.ui.theme.SurfaceHighlight
 import com.japygo.modakmodak.ui.theme.TextSecondary
 import com.japygo.modakmodak.ui.theme.White
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.LocalFireDepartment
 
 @Composable
 fun MilestoneRewardDialog(
@@ -46,18 +50,7 @@ fun MilestoneRewardDialog(
         LottieCompositionSpec.RawRes(R.raw.default_modak) // Using level_up or specific confetti if available, fallback to default for now
     )
 
-    // Calculate Reward based on day
-    val (coinReward, expReward) = when (streakDays) {
-        3 -> 100 to 50
-        7 -> 300 to 150
-        14 -> 700 to 350
-        21 -> 1200 to 600
-        30 -> 2000 to 1000
-        50 -> 4000 to 2000
-        100 -> 10000 to 5000
-        365 -> 50000 to 25000
-        else -> 0 to 0
-    }
+    // Reward calculated inside UI block for simplicity as it's just display now
 
     // Select dynamic message
     val messageResId = when (streakDays) {
@@ -108,22 +101,36 @@ fun MilestoneRewardDialog(
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     // Reward Box
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(SurfaceHighlight.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(androidx.compose.ui.res.stringResource(R.string.currency_unit), color = TextSecondary, fontSize = 12.sp)
-                            Text("+$coinReward", color = White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("EXP", color = TextSecondary, fontSize = 12.sp)
-                            Text("+$expReward", color = White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        }
-                    }
+                // Unified Reward Box
+                val rewardAmount = when(streakDays) {
+                    3 -> 100
+                    7 -> 300
+                    14 -> 700
+                    21 -> 1200
+                    30 -> 2000
+                    50 -> 4000
+                    100 -> 10000
+                    365 -> 50000
+                    else -> 0
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(SurfaceHighlight.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Rounded.LocalFireDepartment,
+                        contentDescription = null,
+                        tint = FireOrange,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("+$rewardAmount", color = White, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                }
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     

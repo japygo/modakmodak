@@ -208,10 +208,10 @@
     <string name="break_msg_level5_4">Now let everything go and stay in deep peace. Your today was perfect.</string>
 
     <!-- Milestone Bonus -->
-    <string name="home_bonus_badge">Get Bonus!</string>
+    <string name="home_bonus_badge">Gift Arrived!</string>
     <string name="bonus_dialog_title">%1$d Days Streak!</string>
-    <string name="bonus_dialog_message">A reward for your consistency.</string>
-    <string name="bonus_dialog_claim">Claim Bonus</string>
+    <string name="bonus_dialog_message">A gift for your hard work.</string>
+    <string name="bonus_dialog_claim">Receive Gift</string>
 
     <!-- Milestone Specific Messages -->
     <string name="bonus_msg_3">Great start! You\'ve overcome the first hurdle.</string>
@@ -222,4 +222,19 @@
     <string name="bonus_msg_50">50 Days journey. Applauding your undying passion.</string>
     <string name="bonus_msg_100">100 Days! You are a true master of focus.</string>
     <string name="bonus_msg_365">One Year. Your consistency is legendary.</string>
+
+    <!-- Reward Screen -->
+    <string name="reward_title">Focus Complete</string>
+    <string name="reward_streak">%1$d Days Streak!</string>
+
+    <string-array name="reward_messages">
+        <item>Great job! You are getting better every day.</item>
+        <item>Small steps lead to big changes. Keep it up!</item>
+        <item>Your focus is amazing. Be proud of yourself.</item>
+        <item>Rest is also part of the journey. Take a breath.</item>
+        <item>You are doing great. One step at a time.</item>
+        <item>Consistency is key. You are unlocking it.</item>
+        <item>The fire of your passion is burning bright.</item>
+        <item>Believe in yourself. You have the power.</item>
+    </string-array>
 </resources>

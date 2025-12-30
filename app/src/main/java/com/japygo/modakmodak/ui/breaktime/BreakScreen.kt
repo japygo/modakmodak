@@ -27,6 +27,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,12 +50,19 @@ import com.japygo.modakmodak.ui.theme.White
 fun BreakScreen(
     navController: NavController,
     viewModel: BreakViewModel,
+    earnedCoins: Int,
+    earnedExp: Int,
+    streakDays: Int
 ) {
     val timeLeft by viewModel.timeLeft.collectAsState()
     val isFinished by viewModel.isFinished.collectAsState()
     val randomMessage by viewModel.randomMessage.collectAsState()
     val isBreakTimerEnabled by viewModel.isBreakTimerEnabled.collectAsState()
     val isScreenOnEnabled by viewModel.isScreenOnEnabled.collectAsState()
+    
+    val studyDuration = remember {
+         navController.currentBackStackEntry?.arguments?.getString("studyDuration")?.toIntOrNull() ?: 25
+    }
 
     if (isScreenOnEnabled) {
         KeepScreenOn()
@@ -65,9 +73,10 @@ fun BreakScreen(
         viewModel.startBreak()
     }
 
-    // Auto-navigate back home on finish
+    // Auto-navigate to Reward Screen on finish
     LaunchedEffect(isFinished) {
         if (isFinished) {
+            // End of Loop: Break -> Home
             navController.popBackStack("home", inclusive = false)
         }
     }
@@ -132,9 +141,10 @@ fun BreakScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Skip Button
+            // Skip Button (Go to Reward)
             Button(
                 onClick = {
+                    // End of Loop: Break -> Home
                     navController.popBackStack("home", inclusive = false)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
