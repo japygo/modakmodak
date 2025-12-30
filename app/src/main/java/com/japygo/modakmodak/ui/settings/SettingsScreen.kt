@@ -236,11 +236,103 @@ fun SettingsScreen(
             item { SettingSectionTitle(stringResource(R.string.settings_section_sound)) }
 
             item {
+                var showPermissionRedirectDialog by remember { mutableStateOf(false) }
+                var pendingPermissionConfirmation by remember { mutableStateOf(false) }
+
+                if (showPermissionRedirectDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showPermissionRedirectDialog = false },
+                        title = { Text(stringResource(R.string.permission_settings_title)) },
+                        text = { Text(stringResource(R.string.permission_settings_message)) },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    val intent = android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                        putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                    }
+                                    context.startActivity(intent)
+                                    pendingPermissionConfirmation = true
+                                    showPermissionRedirectDialog = false
+                                },
+                            ) {
+                                Text(stringResource(R.string.common_settings), color = FireOrange)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showPermissionRedirectDialog = false }) {
+                                Text(stringResource(R.string.common_later), color = TextSecondary)
+                            }
+                        },
+                        containerColor = SurfaceDark,
+                        titleContentColor = White,
+                        textContentColor = TextSecondary,
+                    )
+                }
+
+                // Sync toggle with actual permission status when screen resumes app comes to foreground
+                val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+                androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+                    val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+                        if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                val isGranted = androidx.core.content.ContextCompat.checkSelfPermission(
+                                    context,
+                                    android.Manifest.permission.POST_NOTIFICATIONS
+                                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                                
+                                if (pendingPermissionConfirmation) {
+                                    if (isGranted) {
+                                        viewModel.toggleNotification(true)
+                                    }
+                                    pendingPermissionConfirmation = false
+                                }
+
+                                // Only update if system permission is missing but app setting is on. 
+                                // We don't necessarily force ON if system is ON (user might have muted app internally)
+                                if (!isGranted && isNotificationEnabled) {
+                                    viewModel.toggleNotification(false)
+                                }
+                            }
+                        }
+                    }
+                    val lifecycle = lifecycleOwner.lifecycle
+                    lifecycle.addObserver(observer)
+                    onDispose { lifecycle.removeObserver(observer) }
+                }
+
                 ToggleSettingItem(
                     title = stringResource(R.string.settings_toggle_notifications),
                     icon = Icons.Default.Notifications,
                     checked = isNotificationEnabled,
-                    onCheckedChange = { viewModel.toggleNotification(it) },
+                    onCheckedChange = { isChecked ->
+                        if (isChecked) {
+                            // Trying to enable
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                val isGranted = androidx.core.content.ContextCompat.checkSelfPermission(
+                                    context,
+                                    android.Manifest.permission.POST_NOTIFICATIONS
+                                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+                                if (isGranted) {
+                                    viewModel.toggleNotification(true)
+                                } else {
+                                    // Permission missing, guide to settings
+                                    showPermissionRedirectDialog = true
+                                }
+                            } else {
+                                // Pre-Tiramisu, notifications are enabled by default usually, unless blocked globally
+                                // Simple toggle for now, or check generic notification enabled?
+                                // NotificationManagerCompat.from(context).areNotificationsEnabled()
+                                if (androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+                                    viewModel.toggleNotification(true)
+                                } else {
+                                     showPermissionRedirectDialog = true
+                                }
+                            }
+                        } else {
+                            viewModel.toggleNotification(false)
+                        }
+                    },
                 )
             }
             

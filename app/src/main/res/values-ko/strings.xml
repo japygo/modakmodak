@@ -10,6 +10,12 @@
     <string name="common_reset">초기화</string>
     <string name="common_stop">중단</string>
     <string name="common_continue">계속하기</string>
+    <string name="common_settings">설정</string>
+    <string name="common_later">다음에</string>
+
+    <!-- Permission -->
+    <string name="permission_settings_title">알림 권한이 필요해요</string>
+    <string name="permission_settings_message">모닥모닥에서 보내는 알림을 받을 수 있도록 설정에서 권한을 허용해주세요.</string>
 
     <!-- Navigation -->
     <string name="nav_shop">상점</string>
@@ -207,7 +213,7 @@
     <string name="bonus_dialog_title">%1$d일 연속 달성!</string>
     <string name="bonus_dialog_message">꾸준한 노력에 대한 보상입니다.</string>
     <string name="bonus_dialog_claim">보너스 받기</string>
-    
+
     <!-- Milestone Specific Messages -->
     <string name="bonus_msg_3">시작이 반입니다! 작심삼일을 넘긴 당신, 대단해요.</string>
     <string name="bonus_msg_7">일주일 동안 꾸준히! 습관의 불씨가 타오르고 있어요.</string>

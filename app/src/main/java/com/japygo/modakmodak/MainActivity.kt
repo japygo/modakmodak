@@ -27,8 +27,22 @@ class MainActivity : AppCompatActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { isGranted: Boolean ->
-        // Handle result
+        val settingsRepository = com.japygo.modakmodak.data.repository.SettingsRepository(this)
+        if (!isGranted) {
+            // Permission Denied
+            // User requested silent handling on first launch.
+            // Just update the repository state.
+            lifecycleScope.launch {
+                settingsRepository.setNotificationEnabled(false)
+            }
+        } else {
+             lifecycleScope.launch {
+                settingsRepository.setNotificationEnabled(true)
+            }
+        }
     }
+
+
 
     override fun attachBaseContext(newBase: android.content.Context) {
         super.attachBaseContext(
@@ -44,18 +58,25 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val settingsRepository = com.japygo.modakmodak.data.repository.SettingsRepository(this)
+        
+        // Check for permission on launch
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
                     Manifest.permission.POST_NOTIFICATIONS,
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
+                // Check if we should specifically avoid asking (optional, but per request we just ask)
+                // If the user has already permanently denied, this will immediately trigger the callback with false.
+                // We might want to use a shared pref to track if "First Launch" logic is done to avoid nagging?
+                // The prompt says "First execution: Request".
+                // I will add a simplified check: If notification is explicitly disabled in settingsRepository, maybe don't ask? 
+                // But the user might have disabled it because they were forced to.
+                // For now, I'll follow the flow: Request if missing.
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
-
-        // Observe language changes to recreate activity
-        val settingsRepository = com.japygo.modakmodak.data.repository.SettingsRepository(this)
         lifecycleScope.launch {
             // Skip the initial emission to avoid immediate recreation loop if logic isn't perfect,
             // or better: compare with current configuration.
