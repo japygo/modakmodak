@@ -169,10 +169,28 @@ class ModakRepository(
                 finalAmount = (finalAmount * streakMultiplier).toInt()
                 
                 // Update Milestones
-                val milestones = listOf(3, 7, 14, 21, 30, 50, 100, 365)
                 val currentUnclaimed = currentUser.unclaimedMilestones.split(",").filter { it.isNotEmpty() }.toMutableList()
-                
-                if (milestones.contains(newStreak)) {
+                var isMilestoneReached = false
+
+                // Phase 1: Fixed Milestones (1~365 days)
+                val fixedMilestones = listOf(3, 7, 14, 21, 30, 50, 75, 100, 180, 270, 365)
+                if (fixedMilestones.contains(newStreak)) {
+                    isMilestoneReached = true
+                }
+
+                // Phase 2: Infinite System (366 days+)
+                if (newStreak > 365) {
+                    // Annual Reward (Every 365 days)
+                    if (newStreak % 365 == 0) {
+                        isMilestoneReached = true
+                    }
+                    // Monthly Reward (Every 30 days, excluding annual duplicate)
+                    else if (newStreak % 30 == 0) {
+                        isMilestoneReached = true
+                    }
+                }
+
+                if (isMilestoneReached) {
                     if (!currentUnclaimed.contains(newStreak.toString())) {
                         currentUnclaimed.add(newStreak.toString())
                         milestoneBonus = 1 // Flag for UI
@@ -215,25 +233,15 @@ class ModakRepository(
         } else {
             // Failure logic
             if (duration > 0) {
-                 // Fail: Get base amount (minutes) as Coins/Exp? 
-                 // User said "1 min 1 coin 1 exp... even when hardcore". 
-                 // Usually fail doesn't get multipliers? 
-                 // "failure... 1 min 1 coin" was previous requirement.
-                 // Let's keep it strictly 1 min = 1 unit for fail, NO multipliers.
+                 // Fail: Get base amount (minutes) as Coins/Exp
                  finalAmount = durationMinutes
-                 
-                 // User previously only got Coins on fail? 
-                 // "Fail... 1 coin per minute".
-                 // Now unified? Let's assume ONLY Coins on fail to prevent easy leveling?
-                 // Or Unified means Unified? "Coin and Exp should be obtained equally".
-                 // Let's give BOTH on fail if valid duration, but NO multipliers.
                  
                  val newExp = currentUser.fireExp + finalAmount
                  val newLevel = com.japygo.modakmodak.utils.LevelUtils.calculateLevel(newExp)
                  
                  userDao.insertUser(currentUser.copy(
                      currentCoin = currentUser.currentCoin + finalAmount,
-                     fireExp = newExp, // Grant Exp on fail too? If unified logic.
+                     fireExp = newExp, 
                      fireLevel = newLevel
                  ))
             } else {
@@ -339,16 +347,31 @@ class ModakRepository(
             unclaimed.remove(day.toString())
             
             // Give Rewards Equal for Coin and Exp
-            val rewardAmount = when(day) {
-                3 -> 100
-                7 -> 300
-                14 -> 700
-                21 -> 1200
-                30 -> 2000
-                50 -> 4000
-                100 -> 10000
-                365 -> 50000
-                else -> 0
+            val rewardAmount = if (day <= 365) {
+                // Phase 1: Fixed Milestones
+                when(day) {
+                    3 -> 100
+                    7 -> 300
+                    14 -> 700
+                    21 -> 1200
+                    30 -> 2000
+                    50 -> 4000
+                    75 -> 6000
+                    100 -> 10000
+                    180 -> 20000
+                    270 -> 30000
+                    365 -> 50000
+                    else -> 0
+                }
+            } else {
+                // Phase 2: Infinite System (366+)
+                if (day % 365 == 0) {
+                    50000 // Annual Reward
+                } else if (day % 30 == 0) {
+                    5000 // Monthly Reward
+                } else {
+                    0
+                }
             }
             
             // Coin = Exp

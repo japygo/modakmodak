@@ -53,16 +53,31 @@ fun MilestoneRewardDialog(
     // Reward calculated inside UI block for simplicity as it's just display now
 
     // Select dynamic message
-    val messageResId = when (streakDays) {
-        3 -> R.string.bonus_msg_3
-        7 -> R.string.bonus_msg_7
-        14 -> R.string.bonus_msg_14
-        21 -> R.string.bonus_msg_21
-        30 -> R.string.bonus_msg_30
-        50 -> R.string.bonus_msg_50
-        100 -> R.string.bonus_msg_100
-        365 -> R.string.bonus_msg_365
-        else -> R.string.bonus_dialog_message
+    val messageResId = if (streakDays <= 365) {
+        // Phase 1: Fixed Messages
+        when (streakDays) {
+            3 -> R.string.bonus_msg_3
+            7 -> R.string.bonus_msg_7
+            14 -> R.string.bonus_msg_14
+            21 -> R.string.bonus_msg_21
+            30 -> R.string.bonus_msg_30
+            50 -> R.string.bonus_msg_50
+            75 -> R.string.bonus_msg_75
+            100 -> R.string.bonus_msg_100
+            180 -> R.string.bonus_msg_180
+            270 -> R.string.bonus_msg_270
+            365 -> R.string.bonus_msg_365
+            else -> R.string.bonus_dialog_message
+        }
+    } else {
+        // Phase 2: Infinite Messages
+        if (streakDays % 365 == 0) {
+            R.string.bonus_msg_yearly
+        } else if (streakDays % 30 == 0) {
+            R.string.bonus_msg_monthly
+        } else {
+            R.string.bonus_dialog_message
+        }
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -102,16 +117,25 @@ fun MilestoneRewardDialog(
                     
                     // Reward Box
                 // Unified Reward Box
-                val rewardAmount = when(streakDays) {
-                    3 -> 100
-                    7 -> 300
-                    14 -> 700
-                    21 -> 1200
-                    30 -> 2000
-                    50 -> 4000
-                    100 -> 10000
-                    365 -> 50000
-                    else -> 0
+                val rewardAmount = if (streakDays <= 365) {
+                    when(streakDays) {
+                        3 -> 100
+                        7 -> 300
+                        14 -> 700
+                        21 -> 1200
+                        30 -> 2000
+                        50 -> 4000
+                        75 -> 6000
+                        100 -> 10000
+                        180 -> 20000
+                        270 -> 30000
+                        365 -> 50000
+                        else -> 0
+                    }
+                } else {
+                    if (streakDays % 365 == 0) 50000
+                    else if (streakDays % 30 == 0) 5000
+                    else 0
                 }
 
                 Row(

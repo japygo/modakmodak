@@ -223,6 +223,17 @@
     <string name="bonus_msg_100">100 Days! You are a true master of focus.</string>
     <string name="bonus_msg_365">One Year. Your consistency is legendary.</string>
 
+    <!-- Phase 1 New Milestones (User Request) -->
+    <string name="bonus_msg_75">75 Days! You\'re unstoppable.</string>
+    <string name="bonus_msg_180">Half a year! You\'ve come so far.</string>
+    <string name="bonus_msg_270">9 Months! Consistency is your superpower.</string>
+
+    <!-- Phase 2 Infinite - Monthly Repetition -->
+    <string name="bonus_msg_monthly">Another month of dedication! Keep the fire burning.</string>
+
+    <!-- Phase 2 Infinite - Yearly Repetition -->
+    <string name="bonus_msg_yearly">A magnificent year of focus! Your journey inspires us all.</string>
+
     <!-- Reward Screen -->
     <string name="reward_title">Focus Complete</string>
     <string name="reward_streak">%1$d Days Streak!</string>

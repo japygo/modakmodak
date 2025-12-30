@@ -224,6 +224,17 @@
     <string name="bonus_msg_100">100일의 금자탑! 당신은 진정한 몰입 마스터입니다.</string>
     <string name="bonus_msg_365">1년의 기록, 당신의 성실함은 전설이 될 것입니다.</string>
 
+    <!-- Phase 1 New Milestones -->
+    <string name="bonus_msg_75">75일의 여정! 멈추지 않는 당신의 열정이 아름답습니다.</string>
+    <string name="bonus_msg_180">반년의 꾸준함! 당신은 이미 많은 것을 이뤄냈습니다.</string>
+    <string name="bonus_msg_270">9개월의 성실함! 꾸준함이 당신의 가장 큰 무기입니다.</string>
+
+    <!-- Phase 2 Infinite - Monthly Repetition -->
+    <string name="bonus_msg_monthly">또 한 달을 채우셨네요! 꺼지지 않는 불꽃처럼 계속 타오르세요.</string>
+
+    <!-- Phase 2 Infinite - Yearly Repetition -->
+    <string name="bonus_msg_yearly">또 해를 넘긴 위대한 여정! 당신의 기록은 모두에게 영감이 됩니다.</string>
+
     <!-- Reward Screen -->
     <string name="reward_title">집중 완료</string>
     <string name="reward_streak">%1$d일 연속!</string>
