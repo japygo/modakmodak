@@ -256,7 +256,8 @@
     <string name="ad_shop_free_coins_btn">Get Today\'s Modak</string>
     <string name="ad_shop_free_coins_limit">Today %1$d/%2$d</string>
     <string name="ad_shop_free_coins_toast">You earned %1$d Modak!</string>
-    <string name="ad_shop_ads_loading">Loading Ad...</string>
+    <string name="ad_shop_ads_loading">Preparing next reward...</string>
     <string name="ad_shop_try_later">Try again later</string>
+    <string name="reward_button_receive">Receive</string>
 
 </resources>

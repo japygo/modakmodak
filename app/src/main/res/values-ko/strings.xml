@@ -257,6 +257,7 @@
     <string name="ad_shop_free_coins_btn">오늘의 모닥 받기</string>
     <string name="ad_shop_free_coins_limit">오늘 %1$d/%2$d</string>
     <string name="ad_shop_free_coins_toast">%1$d 모닥을 획득했습니다!</string>
-    <string name="ad_shop_ads_loading">광고 로딩 중...</string>
+    <string name="ad_shop_ads_loading">다음 보상을 준비중...</string>
     <string name="ad_shop_try_later">잠시 후 다시 시도해주세요</string>
+    <string name="reward_button_receive">받기</string>
 </resources>

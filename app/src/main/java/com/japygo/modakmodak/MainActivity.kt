@@ -125,5 +125,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        }
+
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        com.japygo.modakmodak.utils.AdMobManager.cleanup(this)
     }
 }

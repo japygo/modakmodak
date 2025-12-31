@@ -101,8 +101,13 @@ fun HomeScreen(
     var minTimeElapsed by remember { mutableStateOf(false) }
     // Initialize based on whether splash was already shown this session
     var isSplashActive by remember { mutableStateOf(!viewModel.isSplashAlreadyShown) }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(Unit) {
+        // Pre-load ads for smoother experience
+        com.japygo.modakmodak.utils.AdMobManager.loadRewardedAd(context, com.japygo.modakmodak.utils.AdMobManager.AdType.FOCUS)
+        com.japygo.modakmodak.utils.AdMobManager.loadRewardedAd(context, com.japygo.modakmodak.utils.AdMobManager.AdType.SHOP)
+
         if (!viewModel.isSplashAlreadyShown) {
             kotlinx.coroutines.delay(2000) // 2 seconds delay
             minTimeElapsed = true

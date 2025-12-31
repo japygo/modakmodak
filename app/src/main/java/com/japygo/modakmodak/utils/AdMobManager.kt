@@ -38,6 +38,8 @@ object AdMobManager {
     private val _isShopAdLoaded = kotlinx.coroutines.flow.MutableStateFlow(false)
     val isShopAdLoaded: kotlinx.coroutines.flow.StateFlow<Boolean> = _isShopAdLoaded.asStateFlow()
 
+    private var networkCallback: android.net.ConnectivityManager.NetworkCallback? = null
+
     fun initialize(context: Context) {
         MobileAds.initialize(context) { initializationStatus ->
             Log.d(TAG, "AdMob initialized: $initializationStatus")
@@ -46,6 +48,33 @@ object AdMobManager {
                 loadRewardedAd(context, AdType.FOCUS)
                 loadRewardedAd(context, AdType.SHOP)
             }
+        }
+        
+        // Register Network Callback
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val networkRequest = android.net.NetworkRequest.Builder()
+            .addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+            
+        networkCallback = object : android.net.ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: android.net.Network) {
+                super.onAvailable(network)
+                Log.d(TAG, "Network available, retrying ad load...")
+                CoroutineScope(Dispatchers.Main).launch {
+                    loadRewardedAd(context, AdType.FOCUS)
+                    loadRewardedAd(context, AdType.SHOP)
+                }
+            }
+        }
+        connectivityManager.registerNetworkCallback(networkRequest, networkCallback!!)
+    }
+
+    fun cleanup(context: Context) {
+        networkCallback?.let { callback ->
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            connectivityManager.unregisterNetworkCallback(callback)
+            networkCallback = null
+            Log.d(TAG, "NetworkCallback unregistered")
         }
     }
 
@@ -76,7 +105,7 @@ object AdMobManager {
                 
                 // Retry after delay
                 CoroutineScope(Dispatchers.Main).launch {
-                    kotlinx.coroutines.delay(5000) 
+                    kotlinx.coroutines.delay(3000) 
                     loadRewardedAd(context, type)
                 }
             }

@@ -173,6 +173,31 @@ fun RewardScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Confirm/Continue Button
+                    androidx.compose.material3.Button(
+                        onClick = {
+                            if (isBreakEnabled) {
+                                navController.navigate("break/$duration/$earnedCoins/$earnedExp/$streakDays") {
+                                    popUpTo("home")
+                                }
+                            } else {
+                                navController.popBackStack("home", inclusive = false)
+                            }
+                        },
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = SurfaceHighlight.copy(alpha = 0.2f)
+                        )
+                    ) {
+                         Text(
+                            text = stringResource(R.string.reward_button_receive),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = White
+                        )
+                    }
+
                     // AdMob Double Reward Button
                     var isAdWatched by remember { mutableStateOf(false) }
                     val context = androidx.compose.ui.platform.LocalContext.current
@@ -232,31 +257,6 @@ fun RewardScreen(
                                 maxLines = 1
                             )
                         }
-                    }
-
-                    // Confirm/Continue Button
-                    androidx.compose.material3.Button(
-                        onClick = {
-                            if (isBreakEnabled) {
-                                navController.navigate("break/$duration/$earnedCoins/$earnedExp/$streakDays") {
-                                    popUpTo("home")
-                                }
-                            } else {
-                                navController.popBackStack("home", inclusive = false)
-                            }
-                        },
-                        modifier = Modifier.weight(1f).height(50.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                            containerColor = SurfaceHighlight.copy(alpha = 0.2f)
-                        )
-                    ) {
-                         Text(
-                            text = stringResource(if (isBreakEnabled) R.string.common_continue else R.string.common_confirm),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = White
-                        )
                     }
                 }
             }
