@@ -81,6 +81,7 @@ import com.japygo.modakmodak.ui.theme.SurfaceHighlight
 import com.japygo.modakmodak.ui.theme.TextSecondary
 import com.japygo.modakmodak.ui.theme.White
 import com.japygo.modakmodak.utils.LevelUtils
+import com.japygo.modakmodak.utils.findActivity
 
 @Composable
 fun HomeScreen(
@@ -103,10 +104,31 @@ fun HomeScreen(
     var isSplashActive by remember { mutableStateOf(!viewModel.isSplashAlreadyShown) }
     val context = androidx.compose.ui.platform.LocalContext.current
 
+    // Native Ad & Exit Dialog State
+    var showExitDialog by remember { mutableStateOf(false) }
+    var nativeAd by remember { mutableStateOf<com.google.android.gms.ads.nativead.NativeAd?>(null) }
+
+    // Back Handler - explicit intercept
+    // Use the boolean to toggle enabled state if needed, but for now always enabled to catch back press
+    androidx.activity.compose.BackHandler(enabled = !showExitDialog) {
+        if (nativeAd != null) {
+            showExitDialog = true
+        } else {
+             context.findActivity()?.finishAffinity()
+        }
+    }
+
     LaunchedEffect(Unit) {
         // Pre-load ads for smoother experience
         com.japygo.modakmodak.utils.AdMobManager.loadRewardedAd(context, com.japygo.modakmodak.utils.AdMobManager.AdType.FOCUS)
         com.japygo.modakmodak.utils.AdMobManager.loadRewardedAd(context, com.japygo.modakmodak.utils.AdMobManager.AdType.SHOP)
+
+        // Load Native Ad
+        com.japygo.modakmodak.utils.AdMobManager.loadNativeAd(
+            context = context,
+            onAdLoaded = { ad -> nativeAd = ad },
+            onAdFailed = { /* Handle error */ }
+        )
 
         if (!viewModel.isSplashAlreadyShown) {
             kotlinx.coroutines.delay(2000) // 2 seconds delay
@@ -114,6 +136,32 @@ fun HomeScreen(
         } else {
             minTimeElapsed = true // Already shown, condition met immediately
         }
+    }
+
+    if (showExitDialog) {
+        com.japygo.modakmodak.ui.components.ExitConfirmationDialog(
+            nativeAd = nativeAd,
+            onDismiss = { showExitDialog = false },
+            onExit = {
+                context.findActivity()?.finishAffinity()
+            },
+            onReview = {
+                val packageName = context.packageName
+                val uri = android.net.Uri.parse("market://details?id=$packageName")
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri)
+                intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                try {
+                    context.startActivity(intent)
+                } catch (e: android.content.ActivityNotFoundException) {
+                    val webIntent = android.content.Intent(
+                        android.content.Intent.ACTION_VIEW,
+                        android.net.Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+                    )
+                    webIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(webIntent)
+                }
+            }
+        )
     }
 
 

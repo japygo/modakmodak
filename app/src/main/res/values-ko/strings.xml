@@ -260,4 +260,9 @@
     <string name="ad_shop_ads_loading">다음 보상을 준비중...</string>
     <string name="ad_shop_try_later">잠시 후 다시 시도해주세요</string>
     <string name="reward_button_receive">받기</string>
+    <string name="exit_dialog_title">정말 종료하시겠습니까?</string>
+    <string name="exit_dialog_ad_loading">광고 로딩 중...</string>
+    <string name="exit_dialog_review">리뷰 쓰기</string>
+    <string name="exit_dialog_go_back">돌아가기</string>
+    <string name="exit_dialog_exit">종료</string>
 </resources>

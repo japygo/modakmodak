@@ -11,4 +11,7 @@ object AdConfig {
 
     val RewardedShopId: String
         get() = BuildConfig.ADMOB_REWARDED_SHOP_ID
+
+    val NativeAdId: String
+        get() = "ca-app-pub-3940256099942544/2247696110" // Test Ad ID
 }

@@ -22,6 +22,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+// Imports for Native Ad
+import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.gms.ads.nativead.NativeAdView
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import com.japygo.modakmodak.R
+
 object AdMobManager {
     private const val TAG = "AdMobManager"
     enum class AdType { FOCUS, SHOP }
@@ -175,6 +184,23 @@ object AdMobManager {
         }
     }
 
+    fun loadNativeAd(context: Context, onAdLoaded: (NativeAd) -> Unit, onAdFailed: (LoadAdError) -> Unit) {
+        val adLoader = com.google.android.gms.ads.AdLoader.Builder(context, AdConfig.NativeAdId)
+            .forNativeAd { nativeAd ->
+                onAdLoaded(nativeAd)
+            }
+            .withAdListener(object : com.google.android.gms.ads.AdListener() {
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    Log.e(TAG, "NativeAd failed to load: ${adError.message}")
+                    onAdFailed(adError)
+                }
+            })
+            .withNativeAdOptions(NativeAdOptions.Builder().build())
+            .build()
+
+        adLoader.loadAd(AdRequest.Builder().build())
+    }
+
     @Composable
     fun BannerAd(modifier: Modifier = Modifier) {
         AndroidView(
@@ -188,4 +214,70 @@ object AdMobManager {
             }
         )
     }
+
+    @Composable
+    fun NativeAdView(nativeAd: NativeAd, modifier: Modifier = Modifier) {
+        AndroidView(
+            modifier = modifier.fillMaxWidth(),
+            factory = { context ->
+                 val adView = android.view.LayoutInflater.from(context).inflate(R.layout.ad_unified, null) as NativeAdView
+                 populateNativeAdView(nativeAd, adView)
+                 adView
+            }
+        )
+    }
+
+    private fun populateNativeAdView(nativeAd: NativeAd, adView: NativeAdView) {
+        // Set the media view.
+        adView.mediaView = adView.findViewById(R.id.ad_media)
+
+        // Set other ad assets.
+        adView.headlineView = adView.findViewById(R.id.ad_headline)
+        adView.bodyView = adView.findViewById(R.id.ad_body)
+        adView.callToActionView = adView.findViewById(R.id.ad_call_to_action)
+        adView.iconView = adView.findViewById(R.id.ad_app_icon)
+        adView.advertiserView = adView.findViewById(R.id.ad_advertiser)
+
+
+        // The headline and mediaContent are guaranteed to be in every NativeAd.
+        (adView.headlineView as TextView).text = nativeAd.headline
+        adView.mediaView?.mediaContent = nativeAd.mediaContent
+
+        // These assets aren't guaranteed to be in every NativeAd, so it's important to
+        // check before trying to display them.
+        if (nativeAd.body == null) {
+            adView.bodyView?.visibility = android.view.View.INVISIBLE
+        } else {
+            adView.bodyView?.visibility = android.view.View.VISIBLE
+            (adView.bodyView as TextView).text = nativeAd.body
+        }
+
+        if (nativeAd.callToAction == null) {
+            adView.callToActionView?.visibility = android.view.View.INVISIBLE
+        } else {
+            adView.callToActionView?.visibility = android.view.View.VISIBLE
+            (adView.callToActionView as Button).text = nativeAd.callToAction
+        }
+
+        if (nativeAd.icon == null) {
+            adView.iconView?.visibility = android.view.View.GONE
+        } else {
+            (adView.iconView as ImageView).setImageDrawable(
+                nativeAd.icon?.drawable
+            )
+            adView.iconView?.visibility = android.view.View.VISIBLE
+        }
+        
+         if (nativeAd.advertiser == null) {
+            adView.advertiserView?.visibility = android.view.View.INVISIBLE
+        } else {
+            (adView.advertiserView as TextView).text = nativeAd.advertiser
+            adView.advertiserView?.visibility = android.view.View.VISIBLE
+        }
+
+        // This method tells the Google Mobile Ads SDK that you have finished populating your
+        // native ad view with this native ad.
+        adView.setNativeAd(nativeAd)
+    }
 }
+

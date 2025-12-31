@@ -259,5 +259,10 @@
     <string name="ad_shop_ads_loading">Preparing next reward...</string>
     <string name="ad_shop_try_later">Try again later</string>
     <string name="reward_button_receive">Receive</string>
+    <string name="exit_dialog_title">Do you want to exit?</string>
+    <string name="exit_dialog_ad_loading">Loading ad...</string>
+    <string name="exit_dialog_review">Write Review</string>
+    <string name="exit_dialog_go_back">Go Back</string>
+    <string name="exit_dialog_exit">Exit</string>
 
 </resources>
