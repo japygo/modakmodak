@@ -249,4 +249,14 @@
         <item>당신의 열정의 불꽃이 환하게 타오르고 있습니다.</item>
         <item>스스로를 믿으세요. 당신에겐 충분한 힘이 있습니다.</item>
     </string-array>
+
+    <!-- AdMob -->
+    <string name="ad_load_failed">광고를 불러올 수 없습니다</string>
+    <string name="ad_reward_double_coins_btn">2배 보상 받기</string>
+    <string name="ad_reward_double_coins_toast">보상이 2배로 늘어났습니다!</string>
+    <string name="ad_shop_free_coins_btn">오늘의 모닥 받기</string>
+    <string name="ad_shop_free_coins_limit">오늘 %1$d/%2$d</string>
+    <string name="ad_shop_free_coins_toast">%1$d 모닥을 획득했습니다!</string>
+    <string name="ad_shop_ads_loading">광고 로딩 중...</string>
+    <string name="ad_shop_try_later">잠시 후 다시 시도해주세요</string>
 </resources>

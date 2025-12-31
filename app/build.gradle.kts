@@ -1,8 +1,23 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
+val releaseProperties = Properties()
+val releasePropertiesFile = rootProject.file("release.properties")
+if (releasePropertiesFile.exists()) {
+    releaseProperties.load(FileInputStream(releasePropertiesFile))
 }
 
 android {
@@ -28,9 +43,17 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"${releaseProperties.getProperty("ADMOB_BANNER_ID") ?: ""}\"")
+            buildConfigField("String", "ADMOB_REWARDED_FOCUS_ID", "\"${releaseProperties.getProperty("ADMOB_REWARDED_FOCUS_ID") ?: ""}\"")
+            buildConfigField("String", "ADMOB_REWARDED_SHOP_ID", "\"${releaseProperties.getProperty("ADMOB_REWARDED_SHOP_ID") ?: ""}\"")
         }
         debug {
             applicationIdSuffix = ".debug"
+            
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"${localProperties.getProperty("ADMOB_BANNER_ID") ?: "ca-app-pub-3940256099942544/6300978111"}\"")
+            buildConfigField("String", "ADMOB_REWARDED_FOCUS_ID", "\"${localProperties.getProperty("ADMOB_REWARDED_FOCUS_ID") ?: "ca-app-pub-3940256099942544/5224354917"}\"")
+            buildConfigField("String", "ADMOB_REWARDED_SHOP_ID", "\"${localProperties.getProperty("ADMOB_REWARDED_SHOP_ID") ?: "ca-app-pub-3940256099942544/5224354917"}\"")
         }
     }
     compileOptions {
@@ -59,6 +82,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.lottie.compose)
+    implementation(libs.play.services.ads)
 
     // Room
     implementation(libs.androidx.room.runtime)

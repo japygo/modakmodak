@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -52,15 +53,16 @@ import androidx.navigation.NavController
 import com.japygo.modakmodak.R
 import com.japygo.modakmodak.data.entity.ShopItem
 import com.japygo.modakmodak.ui.components.ModakBottomBar
-import com.japygo.modakmodak.ui.components.ModakCoinBadge
-import com.japygo.modakmodak.ui.components.ModakTopBar
 import com.japygo.modakmodak.ui.components.ModakSnackbarHost
+import com.japygo.modakmodak.ui.components.ModakTopBar
 import com.japygo.modakmodak.ui.theme.BackgroundDark
 import com.japygo.modakmodak.ui.theme.FireOrange
 import com.japygo.modakmodak.ui.theme.SurfaceDark
 import com.japygo.modakmodak.ui.theme.SurfaceHighlight
 import com.japygo.modakmodak.ui.theme.TextSecondary
 import com.japygo.modakmodak.ui.theme.White
+import com.japygo.modakmodak.utils.findActivity
+import kotlinx.coroutines.delay
 
 @Composable
 fun ShopScreen(
@@ -71,41 +73,44 @@ fun ShopScreen(
     val shopItems by viewModel.shopItems.collectAsState()
     val inventory by viewModel.inventory.collectAsState()
     val selectedTab by viewModel.selectedTab.collectAsState()
-    val purchaseStatus by viewModel.purchaseStatus.collectAsState()
     val context = LocalContext.current
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(purchaseStatus) {
-        purchaseStatus?.let { status ->
-            val message = when (status) {
-                is ShopViewModel.PurchaseStatus.Bought -> {
-                    val nameResId = when (status.itemId) {
+    LaunchedEffect(viewModel.shopEvent) {
+        viewModel.shopEvent.collect { event ->
+            val message = when (event) {
+                is ShopViewModel.ShopEvent.Bought -> {
+                    val nameResId = when (event.itemId) {
                         "wood_twig" -> R.string.item_wood_twig_name
                         "wood_log" -> R.string.item_wood_log_name
                         "wood_big" -> R.string.item_wood_big_name
                         "magic_blue" -> R.string.item_magic_blue_name
                         else -> null
                     }
-                    val localizedName = nameResId?.let { context.getString(it) } ?: status.itemId
+                    val localizedName = nameResId?.let { context.getString(it) } ?: event.itemId
                     context.getString(R.string.shop_bought_item, localizedName)
                 }
-                is ShopViewModel.PurchaseStatus.BuyFailed -> {
-                    val nameResId = when (status.itemId) {
+                is ShopViewModel.ShopEvent.BuyFailed -> {
+                    val nameResId = when (event.itemId) {
                         "wood_twig" -> R.string.item_wood_twig_name
                         "wood_log" -> R.string.item_wood_log_name
                         "wood_big" -> R.string.item_wood_big_name
                         "magic_blue" -> R.string.item_magic_blue_name
                         else -> null
                     }
-                    val localizedName = nameResId?.let { context.getString(it) } ?: status.itemId
+                    val localizedName = nameResId?.let { context.getString(it) } ?: event.itemId
                     context.getString(R.string.shop_buy_failed, localizedName)
                 }
-                is ShopViewModel.PurchaseStatus.Used -> context.getString(R.string.shop_used_item)
-                is ShopViewModel.PurchaseStatus.UseFailed -> context.getString(R.string.shop_use_failed)
+                is ShopViewModel.ShopEvent.Used -> context.getString(R.string.shop_used_item)
+                is ShopViewModel.ShopEvent.UseFailed -> context.getString(R.string.shop_use_failed)
+                is ShopViewModel.ShopEvent.AdRewardEarned -> context.getString(
+                    R.string.ad_shop_free_coins_toast,
+                    event.amount,
+                )
+                is ShopViewModel.ShopEvent.AdLoadFailed -> context.getString(R.string.ad_shop_ads_loading)
             }
             snackbarHostState.showSnackbar(message)
-            viewModel.clearStatus()
         }
     }
 
@@ -150,7 +155,7 @@ fun ShopScreen(
                 level = user?.fireLevel ?: 1,
                 exp = user?.fireExp ?: 0,
                 fireColorHex = user?.fireColor ?: "#FFFF9500",
-                showLevel = false
+                showLevel = false,
             )
         },
         bottomBar = { ModakBottomBar(navController, "shop") },
@@ -162,6 +167,24 @@ fun ShopScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
         ) {
+            val dailyAdCount by viewModel.dailyAdCount.collectAsState()
+            val isAdLoaded by viewModel.isAdLoaded.collectAsState()
+            val activity = context.findActivity()
+            val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+            FreeCoinCard(
+                limit = 3,
+                current = dailyAdCount,
+                isAdLoaded = isAdLoaded,
+                onWatchAd = {
+                    if (activity != null) {
+                        viewModel.watchAdForCoins(activity = activity)
+                    }
+                },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             ShopGrid(
                 items = shopItems,
                 onBuyClick = {
@@ -173,7 +196,92 @@ fun ShopScreen(
     }
 }
 
+@Composable
+fun FreeCoinCard(
+    limit: Int,
+    current: Int,
+    isAdLoaded: Boolean,
+    onWatchAd: () -> Unit,
+) {
+    val isLimitReached = current >= limit
+    val isEnabled =
+        !isLimitReached // Button always clickable (if limit not reached) to handle clicks/feedback
+    val isReady = isAdLoaded // Visual state tracking
 
+    // Local state to show immediate feedback on click
+    var isProcessing by remember { mutableStateOf(false) }
+
+    if (isProcessing) {
+        LaunchedEffect(Unit) {
+            delay(3000)
+            isProcessing = false
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(SurfaceDark)
+            .border(
+                1.dp,
+                if (isReady) FireOrange.copy(alpha = 0.5f) else White.copy(alpha = 0.1f),
+                RoundedCornerShape(24.dp),
+            )
+            .clickable(enabled = isEnabled && !isProcessing) {
+                isProcessing = true
+                onWatchAd()
+            }
+            .padding(20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column {
+            Text(
+                stringResource(R.string.ad_shop_free_coins_btn),
+                color = if (isReady) White else TextSecondary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                if (isLimitReached) stringResource(
+                    R.string.ad_shop_free_coins_limit,
+                    current,
+                    limit,
+                )
+                else if (!isReady) stringResource(R.string.ad_shop_ads_loading)
+                else stringResource(R.string.ad_shop_free_coins_limit, current, limit),
+                color = if (isReady) FireOrange else TextSecondary,
+                fontSize = 14.sp,
+            )
+        }
+
+        // Icon/Button visual
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(androidx.compose.foundation.shape.CircleShape)
+                .background(if (isReady) FireOrange else SurfaceHighlight.copy(alpha = 0.3f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (isProcessing) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = White,
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Icon(
+                    androidx.compose.material.icons.Icons.Rounded.PlayCircle,
+                    contentDescription = null,
+                    tint = if (isReady) White else White.copy(alpha = 0.5f),
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+        }
+    }
+}
 
 
 @Composable

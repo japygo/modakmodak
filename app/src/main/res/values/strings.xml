@@ -248,4 +248,15 @@
         <item>The fire of your passion is burning bright.</item>
         <item>Believe in yourself. You have the power.</item>
     </string-array>
+
+    <!-- AdMob -->
+    <string name="ad_load_failed">Failed to load ad</string>
+    <string name="ad_reward_double_coins_btn">Get 2x Reward</string>
+    <string name="ad_reward_double_coins_toast">Reward Doubled!</string>
+    <string name="ad_shop_free_coins_btn">Get Today\'s Modak</string>
+    <string name="ad_shop_free_coins_limit">Today %1$d/%2$d</string>
+    <string name="ad_shop_free_coins_toast">You earned %1$d Modak!</string>
+    <string name="ad_shop_ads_loading">Loading Ad...</string>
+    <string name="ad_shop_try_later">Try again later</string>
+
 </resources>

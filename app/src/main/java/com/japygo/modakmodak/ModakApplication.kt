@@ -33,8 +33,8 @@ class ModakApplication : Application() {
             repository.createUserIfNotExists(seedLogs = false)
         }
         
-        // Schedule Notification Worker
-        setupWorkManager()
+        // Initialize AdMob
+        com.japygo.modakmodak.utils.AdMobManager.initialize(this)
     }
     
     private fun setupWorkManager() {

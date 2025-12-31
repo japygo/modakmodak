@@ -19,4 +19,10 @@ interface StudyLogDao {
 
     @Query("SELECT * FROM study_log WHERE date >= :start AND date <= :end ORDER BY date DESC")
     fun getLogsByDateRange(start: Long, end: Long): Flow<List<StudyLog>>
+
+    @androidx.room.Update
+    suspend fun updateLog(log: StudyLog)
+
+    @Query("SELECT * FROM study_log ORDER BY id DESC LIMIT 1")
+    suspend fun getLatestLog(): StudyLog?
 }

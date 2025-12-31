@@ -6,11 +6,15 @@ import com.japygo.modakmodak.data.entity.Inventory
 import com.japygo.modakmodak.data.entity.ShopItem
 import com.japygo.modakmodak.data.entity.User
 import com.japygo.modakmodak.data.repository.ModakRepository
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -32,14 +36,16 @@ class ShopViewModel(
     private val _selectedTab = MutableStateFlow(0)
     val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
 
-    private val _purchaseStatus = MutableStateFlow<PurchaseStatus?>(null) // Toasts/Feedback
-    val purchaseStatus: StateFlow<PurchaseStatus?> = _purchaseStatus.asStateFlow()
+    private val _shopEvent = kotlinx.coroutines.flow.MutableSharedFlow<ShopEvent>(extraBufferCapacity = 1)
+    val shopEvent = _shopEvent.asSharedFlow()
 
-    sealed class PurchaseStatus {
-        data class Bought(val itemId: String) : PurchaseStatus()
-        data class BuyFailed(val itemId: String) : PurchaseStatus()
-        object Used : PurchaseStatus()
-        object UseFailed : PurchaseStatus()
+    sealed class ShopEvent {
+        data class Bought(val itemId: String) : ShopEvent()
+        data class BuyFailed(val itemId: String) : ShopEvent()
+        object Used : ShopEvent()
+        object UseFailed : ShopEvent()
+        data class AdRewardEarned(val amount: Int) : ShopEvent()
+        object AdLoadFailed : ShopEvent()
     }
 
     fun setTab(index: Int) {
@@ -49,9 +55,9 @@ class ShopViewModel(
     fun buyItem(item: ShopItem, quantity: Int) {
         viewModelScope.launch {
             if (repository.buyItem(item.id, quantity)) {
-                _purchaseStatus.value = PurchaseStatus.Bought(item.id)
+                _shopEvent.emit(ShopEvent.Bought(item.id))
             } else {
-                _purchaseStatus.value = PurchaseStatus.BuyFailed(item.id)
+                _shopEvent.emit(ShopEvent.BuyFailed(item.id))
             }
         }
     }
@@ -59,14 +65,72 @@ class ShopViewModel(
     fun useItem(item: Inventory, quantity: Int) {
         viewModelScope.launch {
             if (repository.useItem(item.itemId, quantity)) {
-                _purchaseStatus.value = PurchaseStatus.Used
+                _shopEvent.emit(ShopEvent.Used)
             } else {
-                _purchaseStatus.value = PurchaseStatus.UseFailed
+                _shopEvent.emit(ShopEvent.UseFailed)
             }
         }
     }
 
-    fun clearStatus() {
-        _purchaseStatus.value = null
+    // Ad Logic
+    private val settingsRepository = repository.settingsRepository
+    
+    private val _dailyAdCount = MutableStateFlow(0)
+    val dailyAdCount: StateFlow<Int> = _dailyAdCount.asStateFlow()
+
+    private val _dailyLimit = 3
+    
+    val isAdLoaded: StateFlow<Boolean> = com.japygo.modakmodak.utils.AdMobManager.isShopAdLoaded
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    init {
+        viewModelScope.launch {
+            checkDailyAdLimit()
+        }
+    }
+
+    private suspend fun checkDailyAdLimit() {
+        val today = java.time.LocalDate.now().toString() // ISO 8601
+        val lastDate = settingsRepository.lastAdViewDate.first()
+        val count = settingsRepository.dailyAdViewCount.first()
+
+        if (lastDate != today) {
+            // New day, reset
+            settingsRepository.updateAdViewCount(today, 0)
+            _dailyAdCount.value = 0
+        } else {
+            _dailyAdCount.value = count
+        }
+    }
+
+    fun watchAdForCoins(activity: android.app.Activity) {
+        viewModelScope.launch {
+            checkDailyAdLimit() // Refresh first
+            if (_dailyAdCount.value >= _dailyLimit) {
+                return@launch
+            }
+
+            com.japygo.modakmodak.utils.AdMobManager.showRewardedAd(
+                activity = activity,
+                type = com.japygo.modakmodak.utils.AdMobManager.AdType.SHOP,
+                onUserEarnedReward = { 
+                    viewModelScope.launch {
+                        val rewardAmount = 120
+                        repository.addCoins(rewardAmount)
+                        val newCount = _dailyAdCount.value + 1
+                        val today = java.time.LocalDate.now().toString()
+                        settingsRepository.updateAdViewCount(today, newCount)
+                        _dailyAdCount.value = newCount
+                        _shopEvent.emit(ShopEvent.AdRewardEarned(rewardAmount))
+                    }
+                },
+                onAdDismissed = {},
+                onAdFailed = {
+                    viewModelScope.launch {
+                        _shopEvent.emit(ShopEvent.AdLoadFailed)
+                    }
+                }
+            )
+        }
     }
 }

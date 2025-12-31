@@ -42,6 +42,9 @@ class FocusViewModel(
     val user = repository.userFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    val isAdLoaded: StateFlow<Boolean> = com.japygo.modakmodak.utils.AdMobManager.isFocusAdLoaded
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
     private val _timeLeft = MutableStateFlow(0)
     val timeLeft: StateFlow<Int> = _timeLeft.asStateFlow()
 
@@ -178,6 +181,18 @@ class FocusViewModel(
             
             // Always set result to show earned coins even on failure
             _sessionResult.value = result
+        }
+    }
+
+    fun doubleReward(amount: Int) {
+        viewModelScope.launch {
+            repository.addCoins(amount)
+            repository.updateLastLogReward(amount)
+            // Update session result for UI
+            val current = _sessionResult.value
+            if (current != null) {
+                _sessionResult.value = current.copy(earnedCoins = current.earnedCoins + amount)
+            }
         }
     }
 

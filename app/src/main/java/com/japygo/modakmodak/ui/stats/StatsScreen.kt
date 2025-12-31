@@ -160,7 +160,12 @@ fun StatsScreen(
                 onMonthSelected = { viewModel.setMonth(it) }
             )
         },
-        bottomBar = { ModakBottomBar(navController, "stats") },
+        bottomBar = {
+            Column {
+                com.japygo.modakmodak.utils.AdMobManager.BannerAd()
+                ModakBottomBar(navController, "stats")
+            }
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier

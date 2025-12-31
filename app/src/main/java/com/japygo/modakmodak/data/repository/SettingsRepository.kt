@@ -33,6 +33,10 @@ class SettingsRepository(private val context: Context) {
         val IS_BREAK_NOTIFICATION_ENABLED = booleanPreferencesKey("is_break_notification_enabled")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val IS_HARDCORE_MODE_ENABLED = booleanPreferencesKey("is_hardcore_mode_enabled")
+        
+        // Shop Ad Limits
+        val LAST_AD_VIEW_DATE = stringPreferencesKey("last_ad_view_date_iso") // YYYY-MM-DD
+        val DAILY_AD_VIEW_COUNT = intPreferencesKey("daily_ad_view_count")
     }
 
     val bgmVolume: Flow<Float> = dataStore.data.map { it[BGM_VOLUME] ?: 0.5f }
@@ -113,6 +117,16 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setHardcoreModeEnabled(enabled: Boolean) {
         dataStore.edit { it[IS_HARDCORE_MODE_ENABLED] = enabled }
+    }
+
+    val lastAdViewDate: Flow<String?> = dataStore.data.map { it[LAST_AD_VIEW_DATE] }
+    val dailyAdViewCount: Flow<Int> = dataStore.data.map { it[DAILY_AD_VIEW_COUNT] ?: 0 }
+
+    suspend fun updateAdViewCount(date: String, count: Int) {
+        dataStore.edit { 
+            it[LAST_AD_VIEW_DATE] = date
+            it[DAILY_AD_VIEW_COUNT] = count
+        }
     }
 
     suspend fun clearData() {

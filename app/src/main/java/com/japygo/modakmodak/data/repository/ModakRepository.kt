@@ -21,7 +21,7 @@ class ModakRepository(
     private val shopDao: ShopDao,
     private val inventoryDao: InventoryDao,
     private val timerPresetDao: TimerPresetDao,
-    private val settingsRepository: SettingsRepository
+    val settingsRepository: SettingsRepository
 ) {
     val userFlow: Flow<User?> = userDao.getUser()
     val shopItemsFlow: Flow<List<ShopItem>> = shopDao.getAllShopItems()
@@ -267,6 +267,37 @@ class ModakRepository(
             isLevelUp = isLevelUp,
             milestoneBonus = milestoneBonus
         )
+    }
+
+    suspend fun updateLastLogReward(additionalAmount: Int) {
+        val lastLog = studyLogDao.getLatestLog() ?: return
+        
+        // Update Log
+        val updatedLog = lastLog.copy(
+            earnedCoin = lastLog.earnedCoin + additionalAmount
+        )
+        studyLogDao.updateLog(updatedLog)
+        
+        // Also update User (Coin + Exp)
+        // Note: FocusViewModel.doubleReward already calls addCoins(amount)
+        // So we only need to ensure this method handles what addCoins doesn't, OR 
+        // we shift responsibility. 
+        // The plan said: "FocusViewModel.doubleReward function to call repository.updateLastLogReward(amount) in addition to repository.addCoins(amount)."
+        // So here we only update the log. User coin/exp update is handled by separate call in ViewModel.
+        // Wait, "addCoins" only adds coins. We probably want to add Exp too if the design implies 1 Coin = 1 Exp always.
+        // Let's check addCoins implementation. 
+        // It only updates currentCoin.
+        // If we want consistency (Coin = Exp), we should also add Exp here or in ViewModel.
+        // The user request says "Reward x2". Usually implies both.
+        // Let's safe-guard and add Exp here too if not handled? 
+        // Actually, let's keep it simple as requested: Update Log. 
+        // But for "User", FocusViewModel calls `addCoins`. 
+        // Does `addCoins` add Exp? No.
+        // Should we add Exp? The original logSession adds both.
+        // So if we "double reward", we should probably double Exp too.
+        // Let's add Exp here as well to be consistent.
+        
+        addExp(additionalAmount)
     }
     
     fun getStreakMultiplier(days: Int): Double {

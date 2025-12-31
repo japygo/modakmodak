@@ -73,41 +73,18 @@ fun BagScreen(
     val user by viewModel.user.collectAsState()
     val shopItems by viewModel.shopItems.collectAsState()
     val inventory by viewModel.inventory.collectAsState()
-    val purchaseStatus by viewModel.purchaseStatus.collectAsState()
     val context = LocalContext.current
-
     val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(purchaseStatus) {
-        purchaseStatus?.let { status ->
-            val message = when (status) {
-                is ShopViewModel.PurchaseStatus.Bought -> {
-                    val nameResId = when (status.itemId) {
-                        "wood_twig" -> R.string.item_wood_twig_name
-                        "wood_log" -> R.string.item_wood_log_name
-                        "wood_big" -> R.string.item_wood_big_name
-                        "magic_blue" -> R.string.item_magic_blue_name
-                        else -> null
-                    }
-                    val localizedName = nameResId?.let { context.getString(it) } ?: status.itemId
-                    context.getString(R.string.shop_bought_item, localizedName)
-                }
-                is ShopViewModel.PurchaseStatus.BuyFailed -> {
-                    val nameResId = when (status.itemId) {
-                        "wood_twig" -> R.string.item_wood_twig_name
-                        "wood_log" -> R.string.item_wood_log_name
-                        "wood_big" -> R.string.item_wood_big_name
-                        "magic_blue" -> R.string.item_magic_blue_name
-                        else -> null
-                    }
-                    val localizedName = nameResId?.let { context.getString(it) } ?: status.itemId
-                    context.getString(R.string.shop_buy_failed, localizedName)
-                }
-                is ShopViewModel.PurchaseStatus.Used -> context.getString(R.string.shop_used_item)
-                is ShopViewModel.PurchaseStatus.UseFailed -> context.getString(R.string.shop_use_failed)
+    LaunchedEffect(viewModel.shopEvent) {
+        viewModel.shopEvent.collect { event ->
+            val message = when (event) {
+                is ShopViewModel.ShopEvent.Used -> context.getString(R.string.shop_used_item)
+                is ShopViewModel.ShopEvent.UseFailed -> context.getString(R.string.shop_use_failed)
+                else -> null
             }
-            snackbarHostState.showSnackbar(message)
-            viewModel.clearStatus()
+            if (message != null) {
+                snackbarHostState.showSnackbar(message)
+            }
         }
     }
 
