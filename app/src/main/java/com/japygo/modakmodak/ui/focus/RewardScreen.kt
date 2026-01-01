@@ -44,6 +44,7 @@ import com.japygo.modakmodak.ui.theme.SurfaceHighlight
 import com.japygo.modakmodak.ui.theme.TextSecondary
 import com.japygo.modakmodak.ui.theme.White
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.size
@@ -62,7 +63,13 @@ fun RewardScreen(
     isBreakEnabled: Boolean
 ) {
     var isVisible by remember { mutableStateOf(false) }
-    var displayedCoins by remember { mutableStateOf(earnedCoins) }
+    var isAdWatched by remember { mutableStateOf(false) }
+    var earnedRewardMultiplier by remember { mutableStateOf(false) }
+
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+    val targetCoins = if (earnedRewardMultiplier) earnedCoins * 2 else earnedCoins
 
     LaunchedEffect(Unit) {
         delay(100)
@@ -153,7 +160,7 @@ fun RewardScreen(
                     )
                     // Animated Coin Text
                     val animatedCoins by animateIntAsState(
-                        targetValue = displayedCoins,
+                        targetValue = targetCoins,
                         animationSpec = tween(durationMillis = 1000),
                         label = "coinAnimation"
                     )
@@ -199,10 +206,8 @@ fun RewardScreen(
                     }
 
                     // AdMob Double Reward Button
-                    var isAdWatched by remember { mutableStateOf(false) }
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val activity = context.findActivity()
-                    val scope = androidx.compose.runtime.rememberCoroutineScope()
 
                     // BackHandler to prevent accidental exit
                     BackHandler {
@@ -212,6 +217,8 @@ fun RewardScreen(
                     }
 
                     val isAdLoaded by viewModel.isAdLoaded.collectAsState()
+                    val adLoadFailedMsg = stringResource(R.string.ad_load_failed)
+                    val adLoadingMsg = stringResource(R.string.ad_shop_ads_loading)
 
                     if (!isAdWatched && activity != null) {
                         androidx.compose.material3.Button(
@@ -223,18 +230,23 @@ fun RewardScreen(
                                         onUserEarnedReward = { 
                                             viewModel.doubleReward(earnedCoins)
                                             isAdWatched = true
-                                            displayedCoins *= 2 // Update UI instantly
                                         },
-                                        onAdDismissed = { },
+                                        onAdDismissed = { 
+                                            earnedRewardMultiplier = true
+                                        },
                                         onAdFailed = {
-                                            android.widget.Toast.makeText(context, context.getString(R.string.ad_load_failed), android.widget.Toast.LENGTH_SHORT).show()
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(adLoadFailedMsg)
+                                            }
                                         }
                                      )
                                  } else {
-                                     android.widget.Toast.makeText(context, context.getString(R.string.ad_shop_ads_loading), android.widget.Toast.LENGTH_SHORT).show()
+                                     scope.launch {
+                                         snackbarHostState.showSnackbar(adLoadingMsg)
+                                     }
                                  }
                             },
-                            enabled = true, // Always enabled, show toast if not ready
+                            enabled = true, // Always enabled, show snackbar if not ready
                             modifier = Modifier.weight(1f).height(50.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
@@ -261,5 +273,10 @@ fun RewardScreen(
                 }
             }
         }
+        
+        androidx.compose.material3.SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp)
+        )
     }
 }
