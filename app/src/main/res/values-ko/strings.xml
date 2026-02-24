@@ -65,6 +65,15 @@
     <string name="stats_log_time_format">HH:mm</string>
     <string name="filter_all">전체</string>
 
+    <!-- ASMR Mixer -->
+    <string name="asmr_mixer_title">힐링 ASMR</string>
+    <string name="asmr_sound_fire">타닥타닥 모닥불</string>
+    <string name="asmr_sound_rain">텐트 위 빗소리</string>
+    <string name="asmr_sound_crickets">가을밤 풀벌레</string>
+    <string name="asmr_sound_wind">숲속 바람소리</string>
+    <string name="asmr_sound_stream">졸졸 시냇물</string>
+    <string name="asmr_variation_off">끄기</string>
+
     <!-- Weekdays -->
     <string name="day_mon">월</string>
     <string name="day_tue">화</string>

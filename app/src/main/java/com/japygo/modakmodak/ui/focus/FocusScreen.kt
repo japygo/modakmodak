@@ -128,6 +128,7 @@ fun FocusScreen(
 
 
     var showExitDialog by remember { mutableStateOf(false) }
+    var showAsmrSheet by remember { mutableStateOf(false) }
 
     // 시스템 뒤로가기 제어
     BackHandler(enabled = isFocusing) {
@@ -195,12 +196,15 @@ fun FocusScreen(
     Scaffold(
         containerColor = DeepNavy,
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .fillMaxSize()
         ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
             // Main Timer Section with Circle
             Box(
                 modifier = Modifier
@@ -376,6 +380,34 @@ fun FocusScreen(
                 Spacer(modifier = Modifier.height(80.dp))
             }
         }
+        
+        // ASMR Mixer Button (Top Right)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(innerPadding)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            androidx.compose.material3.TextButton(
+                onClick = { showAsmrSheet = true }
+            ) {
+                Text(
+                    stringResource(R.string.asmr_mixer_title),
+                    color = White.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    } // End Box
+
+    // ASMR Bottom Sheet
+    if (showAsmrSheet) {
+        AsmrMixerBottomSheet(
+            viewModel = viewModel,
+            onDismissRequest = { showAsmrSheet = false }
+        )
+    }
 
     val failureReason by viewModel.failureReason.collectAsState()
 

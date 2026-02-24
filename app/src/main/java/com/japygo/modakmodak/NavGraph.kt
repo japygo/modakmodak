@@ -60,6 +60,7 @@ fun ModakNavGraph(navController: NavHostController = rememberNavController()) {
                             repository,
                             application.settingsRepository,
                             application.notificationHelper,
+                            application.asmrManager
                         )
                     }
                 },
@@ -186,6 +187,7 @@ fun ModakNavGraph(navController: NavHostController = rememberNavController()) {
                             repository,
                             application.settingsRepository,
                             application.notificationHelper,
+                            application.asmrManager
                         )
                     }
                 },

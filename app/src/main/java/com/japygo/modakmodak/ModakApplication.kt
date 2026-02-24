@@ -5,6 +5,7 @@ import com.japygo.modakmodak.data.ModakDatabase
 import com.japygo.modakmodak.data.repository.ModakRepository
 import com.japygo.modakmodak.data.repository.SettingsRepository
 import com.japygo.modakmodak.utils.NotificationHelper
+import com.japygo.modakmodak.utils.AsmrManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,12 +15,14 @@ class ModakApplication : Application() {
     lateinit var repository: ModakRepository
     lateinit var settingsRepository: SettingsRepository
     lateinit var notificationHelper: NotificationHelper
+    lateinit var asmrManager: AsmrManager
 
     override fun onCreate() {
         super.onCreate()
         database = ModakDatabase.getDatabase(this)
         settingsRepository = SettingsRepository(this)
         notificationHelper = NotificationHelper(this)
+        asmrManager = AsmrManager(this)
         repository = ModakRepository(
             database.userDao(),
             database.studyLogDao(),

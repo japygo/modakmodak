@@ -65,6 +65,15 @@
     <string name="stats_log_time_format">HH:mm</string>
     <string name="filter_all">All</string>
 
+    <!-- ASMR Mixer -->
+    <string name="asmr_mixer_title">Healing ASMR</string>
+    <string name="asmr_sound_fire">Crackling Fire</string>
+    <string name="asmr_sound_rain">Rain on Tent</string>
+    <string name="asmr_sound_crickets">Autumn Crickets</string>
+    <string name="asmr_sound_wind">Forest Wind</string>
+    <string name="asmr_sound_stream">Babbling Stream</string>
+    <string name="asmr_variation_off">Off</string>
+
     <!-- Weekdays -->
     <string name="day_mon">M</string>
     <string name="day_tue">T</string>

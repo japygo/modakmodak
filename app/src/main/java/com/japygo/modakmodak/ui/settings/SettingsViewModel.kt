@@ -22,6 +22,18 @@ class SettingsViewModel(
     val sfxVolume: StateFlow<Float> = settingsRepository.sfxVolume
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.5f)
 
+    val fireVolume: StateFlow<Float> = settingsRepository.fireVolume.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0f)
+    val rainVolume: StateFlow<Float> = settingsRepository.rainVolume.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0f)
+    val cricketsVolume: StateFlow<Float> = settingsRepository.cricketsVolume.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0f)
+    val windVolume: StateFlow<Float> = settingsRepository.windVolume.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0f)
+    val streamVolume: StateFlow<Float> = settingsRepository.streamVolume.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0f)
+
+    val fireVariation: StateFlow<Int> = settingsRepository.fireVariation.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val rainVariation: StateFlow<Int> = settingsRepository.rainVariation.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val cricketsVariation: StateFlow<Int> = settingsRepository.cricketsVariation.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val windVariation: StateFlow<Int> = settingsRepository.windVariation.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val streamVariation: StateFlow<Int> = settingsRepository.streamVariation.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     val isVibrationEnabled: StateFlow<Boolean> = settingsRepository.isVibrationEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
@@ -74,6 +86,18 @@ class SettingsViewModel(
             settingsRepository.setSfxVolume(volume)
         }
     }
+
+    fun updateFireVolume(volume: Float) = viewModelScope.launch { settingsRepository.setFireVolume(volume) }
+    fun updateRainVolume(volume: Float) = viewModelScope.launch { settingsRepository.setRainVolume(volume) }
+    fun updateCricketsVolume(volume: Float) = viewModelScope.launch { settingsRepository.setCricketsVolume(volume) }
+    fun updateWindVolume(volume: Float) = viewModelScope.launch { settingsRepository.setWindVolume(volume) }
+    fun updateStreamVolume(volume: Float) = viewModelScope.launch { settingsRepository.setStreamVolume(volume) }
+
+    fun updateFireVariation(variation: Int) = viewModelScope.launch { settingsRepository.setFireVariation(variation) }
+    fun updateRainVariation(variation: Int) = viewModelScope.launch { settingsRepository.setRainVariation(variation) }
+    fun updateCricketsVariation(variation: Int) = viewModelScope.launch { settingsRepository.setCricketsVariation(variation) }
+    fun updateWindVariation(variation: Int) = viewModelScope.launch { settingsRepository.setWindVariation(variation) }
+    fun updateStreamVariation(variation: Int) = viewModelScope.launch { settingsRepository.setStreamVariation(variation) }
 
     fun toggleVibration(enabled: Boolean) {
         viewModelScope.launch {
