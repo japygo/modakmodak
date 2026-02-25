@@ -1,6 +1,11 @@
 package com.japygo.modakmodak.utils
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -18,6 +23,47 @@ class AsmrManager(private val context: Context) {
     private val currentVolumes = mutableMapOf<SoundType, Float>()
 
     private var isPlayingAll = false
+    private var isExternallyPaused = false
+    private var isReceiverRegistered = false
+
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var audioFocusRequest: AudioFocusRequest? = null
+
+    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                if (isPlayingAll) {
+                    isExternallyPaused = true
+                    abandonAudioFocus()
+                    pausePlayersOnly()
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                if (isPlayingAll) {
+                    isExternallyPaused = true
+                    pausePlayersOnly()
+                }
+            }
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                if (isPlayingAll && isExternallyPaused) {
+                    isExternallyPaused = false
+                    playPlayersOnly()
+                }
+            }
+        }
+    }
+
+    private val noisyReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
+                if (isPlayingAll) {
+                    isExternallyPaused = true
+                    pausePlayersOnly()
+                }
+            }
+        }
+    }
 
     private val audioAttributes = AudioAttributes.Builder()
         .setUsage(C.USAGE_MEDIA)
@@ -25,12 +71,50 @@ class AsmrManager(private val context: Context) {
         .build()
 
     fun initialize() {
-        // No-op for now. 
-        // Players are lazily loaded in setVariation to save memory instead of preloading all.
+        if (isReceiverRegistered) return
+        try {
+            context.registerReceiver(
+                noisyReceiver, 
+                IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+            )
+            isReceiverRegistered = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun requestAudioFocus(): Boolean {
+        if (audioFocusRequest == null) {
+            audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(
+                    android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                )
+                .setAcceptsDelayedFocusGain(true)
+                .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                .build()
+        }
+        val result = audioManager.requestAudioFocus(audioFocusRequest!!)
+        return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+    }
+
+    private fun abandonAudioFocus() {
+        audioFocusRequest?.let {
+            audioManager.abandonAudioFocusRequest(it)
+        }
     }
 
     fun playAll() {
         isPlayingAll = true
+        isExternallyPaused = false
+        if (requestAudioFocus()) {
+            playPlayersOnly()
+        }
+    }
+
+    private fun playPlayersOnly() {
         players.forEach { (type, player) ->
             try {
                 val volume = currentVolumes[type] ?: 0f
@@ -45,6 +129,12 @@ class AsmrManager(private val context: Context) {
 
     fun pauseAll() {
         isPlayingAll = false
+        isExternallyPaused = false
+        abandonAudioFocus()
+        pausePlayersOnly()
+    }
+
+    private fun pausePlayersOnly() {
         players.values.forEach {
             try {
                 if (it.isPlaying) it.pause()
@@ -56,12 +146,12 @@ class AsmrManager(private val context: Context) {
 
     fun stopAll() {
         isPlayingAll = false
+        isExternallyPaused = false
+        abandonAudioFocus()
         players.values.forEach {
             try {
-                if (it.isPlaying) {
-                    it.pause()
-                    it.seekTo(0)
-                }
+                it.pause()
+                it.seekTo(0)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -91,8 +181,9 @@ class AsmrManager(private val context: Context) {
         if (resId != 0) {
             try {
                 val player = ExoPlayer.Builder(context).build().also {
-                    it.setAudioAttributes(audioAttributes, true)
-                    it.setHandleAudioBecomingNoisy(true)
+                    // Do not handle AudioFocus per player, let AsmrManager handle it centrally.
+                    it.setAudioAttributes(audioAttributes, false)
+                    it.setHandleAudioBecomingNoisy(false) // We handle this manually now
                 }
                 player.repeatMode = Player.REPEAT_MODE_ONE // Gapless loop natively
 
@@ -107,7 +198,7 @@ class AsmrManager(private val context: Context) {
 
                 players[type] = player
 
-                if (isPlayingAll && volume > 0f) {
+                if (isPlayingAll && !isExternallyPaused && volume > 0f) {
                     player.play()
                 }
             } catch (e: Exception) {
@@ -127,7 +218,7 @@ class AsmrManager(private val context: Context) {
                         player.pause()
                     }
                 } else {
-                    if (isPlayingAll && !player.isPlaying) {
+                    if (isPlayingAll && !isExternallyPaused && !player.isPlaying) {
                         player.play()
                     }
                 }
@@ -139,6 +230,8 @@ class AsmrManager(private val context: Context) {
 
     fun release() {
         isPlayingAll = false
+        isExternallyPaused = false
+        abandonAudioFocus()
         players.values.forEach {
             try {
                 it.stop()
@@ -148,6 +241,15 @@ class AsmrManager(private val context: Context) {
             }
         }
         players.clear()
+        
+        try {
+            if (isReceiverRegistered) {
+                context.unregisterReceiver(noisyReceiver)
+                isReceiverRegistered = false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         // we keep the recorded variations and volumes so that if the user starts another focus session
         // the viewmodel will quickly push state, but usually the viewmodel re-triggers flows anyway.
     }
