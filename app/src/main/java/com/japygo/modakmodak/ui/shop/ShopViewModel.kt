@@ -114,22 +114,27 @@ class ShopViewModel(
             
             val wasAdLoaded = isAdLoaded.value
 
+            var adRewardAmount = 0
+
             com.japygo.modakmodak.utils.AdMobManager.showRewardedAd(
                 activity = activity,
                 type = com.japygo.modakmodak.utils.AdMobManager.AdType.SHOP,
                 onUserEarnedReward = { 
                     viewModelScope.launch {
-                        val rewardAmount = 120
-                        repository.addCoins(rewardAmount)
+                        adRewardAmount = 120
+                        repository.addCoins(adRewardAmount)
                         val newCount = _dailyAdCount.value + 1
                         val today = java.time.LocalDate.now().toString()
                         settingsRepository.updateAdViewCount(today, newCount)
                         _dailyAdCount.value = newCount
-                        _shopEvent.emit(ShopEvent.AdRewardEarned(rewardAmount))
                     }
                 },
                 onAdDismissed = {
                     viewModelScope.launch {
+                        if (adRewardAmount > 0) {
+                            _shopEvent.emit(ShopEvent.AdRewardEarned(adRewardAmount))
+                            adRewardAmount = 0
+                        }
                         _shopEvent.emit(ShopEvent.AdDismissed)
                     }
                 },

@@ -225,14 +225,18 @@ fun RewardScreen(
                             onClick = {
                                      val wasAdLoaded = isAdLoaded
                                      isProcessing = true
+                                     var isRewardEarned = false
                                      com.japygo.modakmodak.utils.AdMobManager.showRewardedAd(
                                         activity = activity,
                                         type = com.japygo.modakmodak.utils.AdMobManager.AdType.FOCUS,
                                         onUserEarnedReward = { 
                                             viewModel.doubleReward(earnedCoins)
-                                            earnedRewardMultiplier = true
+                                            isRewardEarned = true
                                         },
                                         onAdDismissed = { 
+                                            if (isRewardEarned) {
+                                                earnedRewardMultiplier = true
+                                            }
                                             isProcessing = false
                                         },
                                         onAdFailed = {
