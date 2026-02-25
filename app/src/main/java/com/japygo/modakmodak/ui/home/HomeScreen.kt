@@ -119,9 +119,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(Unit) {
-        // Pre-load ads for smoother experience
-        com.japygo.modakmodak.utils.AdMobManager.loadRewardedAd(context, com.japygo.modakmodak.utils.AdMobManager.AdType.FOCUS)
-        com.japygo.modakmodak.utils.AdMobManager.loadRewardedAd(context, com.japygo.modakmodak.utils.AdMobManager.AdType.SHOP)
+
 
         // Load Native Ad
         com.japygo.modakmodak.utils.AdMobManager.loadNativeAd(

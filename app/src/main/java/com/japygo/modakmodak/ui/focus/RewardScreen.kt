@@ -63,8 +63,8 @@ fun RewardScreen(
     isBreakEnabled: Boolean
 ) {
     var isVisible by remember { mutableStateOf(false) }
-    var isAdWatched by remember { mutableStateOf(false) }
     var earnedRewardMultiplier by remember { mutableStateOf(false) }
+    var isProcessing by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
@@ -220,46 +220,58 @@ fun RewardScreen(
                     val adLoadFailedMsg = stringResource(R.string.ad_load_failed)
                     val adLoadingMsg = stringResource(R.string.ad_shop_ads_loading)
 
-                    if (!isAdWatched && activity != null) {
+                    if (!earnedRewardMultiplier && activity != null) {
                         androidx.compose.material3.Button(
                             onClick = {
+                                     val wasAdLoaded = isAdLoaded
+                                     isProcessing = true
                                      com.japygo.modakmodak.utils.AdMobManager.showRewardedAd(
                                         activity = activity,
                                         type = com.japygo.modakmodak.utils.AdMobManager.AdType.FOCUS,
                                         onUserEarnedReward = { 
                                             viewModel.doubleReward(earnedCoins)
-                                            isAdWatched = true
-                                        },
-                                        onAdDismissed = { 
                                             earnedRewardMultiplier = true
                                         },
+                                        onAdDismissed = { 
+                                            isProcessing = false
+                                        },
                                         onAdFailed = {
+                                            isProcessing = false
                                             scope.launch {
-                                                snackbarHostState.showSnackbar(if (!isAdLoaded) adLoadingMsg else adLoadFailedMsg)
+                                                snackbarHostState.showSnackbar(if (!wasAdLoaded) adLoadingMsg else adLoadFailedMsg)
                                             }
                                         }
                                      )
                             },
-                            enabled = true, // Always enabled, show snackbar if not ready
+                            enabled = !isProcessing,
                             modifier = Modifier.weight(1f).height(50.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = FireOrange
+                                containerColor = if (isAdLoaded) FireOrange else SurfaceHighlight.copy(alpha = 0.5f),
+                                disabledContainerColor = SurfaceHighlight.copy(alpha = 0.5f)
                             ),
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp) 
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.PlayCircle,
-                                contentDescription = null,
-                                tint = White,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            if (isProcessing) {
+                                androidx.compose.material3.CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.PlayCircle,
+                                    contentDescription = null,
+                                    tint = if (isAdLoaded) White else White.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                             androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = stringResource(R.string.ad_reward_double_coins_btn),
+                                text = if (isAdLoaded) stringResource(R.string.ad_reward_double_coins_btn) else stringResource(R.string.ad_shop_ads_loading),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = White,
+                                color = if (isAdLoaded) White else TextSecondary,
                                 maxLines = 1
                             )
                         }

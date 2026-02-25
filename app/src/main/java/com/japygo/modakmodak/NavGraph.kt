@@ -78,10 +78,7 @@ fun ModakNavGraph(navController: NavHostController = rememberNavController()) {
             val application = context.applicationContext as ModakApplication
             val repository = application.repository
 
-            // 상점 진입 시 광고 로드 확인
-            LaunchedEffect(Unit) {
-                com.japygo.modakmodak.utils.AdMobManager.loadRewardedAd(context, com.japygo.modakmodak.utils.AdMobManager.AdType.SHOP)
-            }
+
 
             val viewModel: ShopViewModel = viewModel(
                 factory = viewModelFactory {

@@ -45,7 +45,8 @@ class ShopViewModel(
         object Used : ShopEvent()
         object UseFailed : ShopEvent()
         data class AdRewardEarned(val amount: Int) : ShopEvent()
-        object AdLoadFailed : ShopEvent()
+        data class AdLoadFailed(val wasAdLoaded: Boolean) : ShopEvent()
+        object AdDismissed : ShopEvent()
     }
 
     fun setTab(index: Int) {
@@ -107,8 +108,11 @@ class ShopViewModel(
         viewModelScope.launch {
             checkDailyAdLimit() // Refresh first
             if (_dailyAdCount.value >= _dailyLimit) {
+                _shopEvent.emit(ShopEvent.AdDismissed) // Reset isAdProcessing
                 return@launch
             }
+            
+            val wasAdLoaded = isAdLoaded.value
 
             com.japygo.modakmodak.utils.AdMobManager.showRewardedAd(
                 activity = activity,
@@ -124,10 +128,14 @@ class ShopViewModel(
                         _shopEvent.emit(ShopEvent.AdRewardEarned(rewardAmount))
                     }
                 },
-                onAdDismissed = {},
+                onAdDismissed = {
+                    viewModelScope.launch {
+                        _shopEvent.emit(ShopEvent.AdDismissed)
+                    }
+                },
                 onAdFailed = {
                     viewModelScope.launch {
-                        _shopEvent.emit(ShopEvent.AdLoadFailed)
+                        _shopEvent.emit(ShopEvent.AdLoadFailed(wasAdLoaded))
                     }
                 }
             )

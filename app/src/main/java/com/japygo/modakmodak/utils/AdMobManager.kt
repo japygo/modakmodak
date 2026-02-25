@@ -61,6 +61,12 @@ object AdMobManager {
         // Register Network Callback
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            
+        networkCallback?.let { 
+            connectivityManager.unregisterNetworkCallback(it)
+            networkCallback = null
+        }
+        
         val networkRequest = android.net.NetworkRequest.Builder()
             .addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
@@ -86,6 +92,12 @@ object AdMobManager {
             networkCallback = null
             Log.d(TAG, "NetworkCallback unregistered")
         }
+        focusRewardedAd = null
+        shopRewardedAd = null
+        _isFocusAdLoaded.value = false
+        _isShopAdLoaded.value = false
+        isFocusAdLoading = false
+        isShopAdLoading = false
     }
 
     fun loadRewardedAd(

@@ -76,9 +76,17 @@ fun ShopScreen(
     val context = LocalContext.current
 
     val snackbarHostState = remember { SnackbarHostState() }
+    var isAdProcessing by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel.shopEvent) {
         viewModel.shopEvent.collect { event ->
+            if (event is ShopViewModel.ShopEvent.AdRewardEarned || 
+                event is ShopViewModel.ShopEvent.AdLoadFailed || 
+                event is ShopViewModel.ShopEvent.AdDismissed) {
+                isAdProcessing = false
+            }
+            if (event is ShopViewModel.ShopEvent.AdDismissed) return@collect
+
             val message = when (event) {
                 is ShopViewModel.ShopEvent.Bought -> {
                     val nameResId = when (event.itemId) {
@@ -108,9 +116,15 @@ fun ShopScreen(
                     R.string.ad_shop_free_coins_toast,
                     event.amount,
                 )
-                is ShopViewModel.ShopEvent.AdLoadFailed -> context.getString(R.string.ad_shop_ads_loading)
+                is ShopViewModel.ShopEvent.AdLoadFailed -> {
+                    if (!event.wasAdLoaded) context.getString(R.string.ad_shop_ads_loading)
+                    else context.getString(R.string.ad_load_failed)
+                }
+                is ShopViewModel.ShopEvent.AdDismissed -> null
             }
-            snackbarHostState.showSnackbar(message)
+            if (message != null) {
+                snackbarHostState.showSnackbar(message)
+            }
         }
     }
 
@@ -176,8 +190,10 @@ fun ShopScreen(
                 limit = 3,
                 current = dailyAdCount,
                 isAdLoaded = isAdLoaded,
+                isProcessing = isAdProcessing,
                 onWatchAd = {
                     if (activity != null) {
+                        isAdProcessing = true
                         viewModel.watchAdForCoins(activity = activity)
                     }
                 },
@@ -201,22 +217,13 @@ fun FreeCoinCard(
     limit: Int,
     current: Int,
     isAdLoaded: Boolean,
+    isProcessing: Boolean,
     onWatchAd: () -> Unit,
 ) {
     val isLimitReached = current >= limit
     val isEnabled =
         !isLimitReached // Button always clickable (if limit not reached) to handle clicks/feedback
     val isReady = isAdLoaded // Visual state tracking
-
-    // Local state to show immediate feedback on click
-    var isProcessing by remember { mutableStateOf(false) }
-
-    if (isProcessing) {
-        LaunchedEffect(Unit) {
-            delay(3000)
-            isProcessing = false
-        }
-    }
 
     Row(
         modifier = Modifier
@@ -229,7 +236,6 @@ fun FreeCoinCard(
                 RoundedCornerShape(24.dp),
             )
             .clickable(enabled = isEnabled && !isProcessing) {
-                isProcessing = true
                 onWatchAd()
             }
             .padding(20.dp),
