@@ -113,6 +113,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.lottie.compose)
     implementation(libs.play.services.ads)
+    implementation(libs.androidx.media3.exoplayer)
 
     // Room
     implementation(libs.androidx.room.runtime)

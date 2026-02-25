@@ -1,16 +1,17 @@
 package com.japygo.modakmodak.utils
 
 import android.content.Context
-import android.media.MediaPlayer
-import com.japygo.modakmodak.R
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 
 enum class SoundType {
     FIRE, RAIN, CRICKETS, WIND, STREAM
 }
 
 class AsmrManager(private val context: Context) {
-    private val players = mutableMapOf<SoundType, MediaPlayer>()
-    
+    private val players = mutableMapOf<SoundType, ExoPlayer>()
+
     // Track current variations and volumes
     private val currentVariations = mutableMapOf<SoundType, Int>()
     private val currentVolumes = mutableMapOf<SoundType, Float>()
@@ -24,9 +25,9 @@ class AsmrManager(private val context: Context) {
 
     fun playAll() {
         isPlayingAll = true
-        players.values.forEach { 
+        players.values.forEach {
             try {
-                if (!it.isPlaying) it.start()
+                if (!it.isPlaying) it.play()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -35,7 +36,7 @@ class AsmrManager(private val context: Context) {
 
     fun pauseAll() {
         isPlayingAll = false
-        players.values.forEach { 
+        players.values.forEach {
             try {
                 if (it.isPlaying) it.pause()
             } catch (e: Exception) {
@@ -46,7 +47,7 @@ class AsmrManager(private val context: Context) {
 
     fun stopAll() {
         isPlayingAll = false
-        players.values.forEach { 
+        players.values.forEach {
             try {
                 if (it.isPlaying) {
                     it.pause()
@@ -64,7 +65,7 @@ class AsmrManager(private val context: Context) {
         }
 
         currentVariations[type] = variation
-        
+
         // Release old player if exists
         try {
             players[type]?.release()
@@ -80,17 +81,22 @@ class AsmrManager(private val context: Context) {
         val resId = getResIdForVariation(type, variation)
         if (resId != 0) {
             try {
-                val player = MediaPlayer.create(context, resId)
-                player.isLooping = true
-                
+                val player = ExoPlayer.Builder(context).build()
+                player.repeatMode = Player.REPEAT_MODE_ONE // Gapless loop natively
+
+                val uri = "android.resource://${context.packageName}/$resId"
+                val mediaItem = MediaItem.fromUri(uri)
+                player.setMediaItem(mediaItem)
+                player.prepare()
+
                 // Restore volume
                 val volume = currentVolumes[type] ?: 0f
-                player.setVolume(volume, volume)
-                
+                player.volume = volume
+
                 players[type] = player
-                
+
                 if (isPlayingAll) {
-                    player.start()
+                    player.play()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -101,7 +107,7 @@ class AsmrManager(private val context: Context) {
     fun setVolume(type: SoundType, volume: Float) {
         currentVolumes[type] = volume
         try {
-            players[type]?.setVolume(volume, volume)
+            players[type]?.volume = volume
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -109,9 +115,9 @@ class AsmrManager(private val context: Context) {
 
     fun release() {
         isPlayingAll = false
-        players.values.forEach { 
+        players.values.forEach {
             try {
-                if (it.isPlaying) it.stop()
+                it.stop()
                 it.release()
             } catch (e: Exception) {
                 e.printStackTrace()
