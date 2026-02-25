@@ -187,6 +187,7 @@ object AdMobManager {
                         shopRewardedAd = null
                         _isShopAdLoaded.value = false
                     }
+                    loadRewardedAd(activity, type) // Auto-reload if failed to show
                     onAdFailed()
                 }
             }
