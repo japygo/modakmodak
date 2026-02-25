@@ -223,9 +223,8 @@ fun RewardScreen(
                     if (!isAdWatched && activity != null) {
                         androidx.compose.material3.Button(
                             onClick = {
-                                 if (isAdLoaded) {
                                      com.japygo.modakmodak.utils.AdMobManager.showRewardedAd(
-                                        activity = activity!!,
+                                        activity = activity,
                                         type = com.japygo.modakmodak.utils.AdMobManager.AdType.FOCUS,
                                         onUserEarnedReward = { 
                                             viewModel.doubleReward(earnedCoins)
@@ -236,15 +235,10 @@ fun RewardScreen(
                                         },
                                         onAdFailed = {
                                             scope.launch {
-                                                snackbarHostState.showSnackbar(adLoadFailedMsg)
+                                                snackbarHostState.showSnackbar(if (!isAdLoaded) adLoadingMsg else adLoadFailedMsg)
                                             }
                                         }
                                      )
-                                 } else {
-                                     scope.launch {
-                                         snackbarHostState.showSnackbar(adLoadingMsg)
-                                     }
-                                 }
                             },
                             enabled = true, // Always enabled, show snackbar if not ready
                             modifier = Modifier.weight(1f).height(50.dp),

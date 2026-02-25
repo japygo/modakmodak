@@ -120,12 +120,9 @@ object AdMobManager {
                         _isShopAdLoaded.value = false
                     }
                     onFailed?.invoke()
-
-                    // Retry after delay
-                    CoroutineScope(Dispatchers.Main).launch {
-                        kotlinx.coroutines.delay(3000)
-                        loadRewardedAd(context, type)
-                    }
+                    // Automatic retries without backoff lead to AdMob spam blocks.
+                    // Instead, rely on the user triggering a retry when they click the disabled button,
+                    // which calls showRewardedAd that falls back to loadRewardedAd.
                 }
 
                 override fun onAdLoaded(ad: RewardedAd) {
