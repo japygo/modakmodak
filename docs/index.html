@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모닥모닥 - 깊은 몰입의 순간</title>
+  <meta name="description" content="밤의 숲속, 조용히 타오르는 모닥불처럼. 집중할수록 자라나는 불꽃과 함께하는 뽀모도로 타이머.">
+  <meta name="keywords" content="모닥모닥, 뽀모도로, 집중타이머, 시간관리, 공부앱, 생산성">
+  <meta property="og:title" content="모닥모닥 - 깊은 몰입의 순간">
+  <meta property="og:description" content="밤의 숲속, 조용히 타오르는 모닥불처럼. 집중할수록 자라나는 따뜻한 불꽃.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="images/ic_launcher_round.webp" type="image/webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary:   #0A192F;
+      --bg-secondary: #1A1F2E;
+      --fire-gold:    #FFD700;
+      --fire-bright:  #FFA500;
+      --fire-orange:  #FF6B35;
+      --fire-red:     #FF4500;
+      --fire-crimson: #DC143C;
+      --text-primary: #FFFFFF;
+      --text-secondary: #AAAAAA;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* === Particles === */
+    .particles-bg {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .particle {
+      position: absolute; width: 3px; height: 3px;
+      background: var(--fire-bright); border-radius: 50%;
+      opacity: 0; animation: floatUp linear infinite;
+    }
+    @keyframes floatUp {
+      0%   { opacity: 0; transform: translateY(100vh) scale(0); }
+      10%  { opacity: 0.8; }
+      90%  { opacity: 0.3; }
+      100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+    }
+
+    /* === Navbar === */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.3s ease, backdrop-filter 0.3s ease;
+    }
+    .navbar.scrolled {
+      background: rgba(10, 25, 47, 0.92);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.65rem;
+      text-decoration: none; color: var(--text-primary);
+    }
+    .nav-logo img { width: 36px; height: 36px; border-radius: 50%; }
+    .nav-logo span { font-size: 1.1rem; font-weight: 700; }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .lang-toggle {
+      display: flex; gap: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 20px; padding: 3px;
+    }
+    .lang-btn {
+      background: none; border: none; cursor: pointer;
+      padding: 4px 11px; border-radius: 16px;
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    .lang-btn.active { background: var(--fire-bright); color: #fff; }
+    .lang-btn:hover:not(.active) { color: var(--text-primary); }
+    .nav-cta {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: linear-gradient(135deg, var(--fire-bright), var(--fire-orange));
+      color: #fff; padding: 0.5rem 1.1rem; border-radius: 50px;
+      text-decoration: none; font-weight: 700; font-size: 0.85rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 3px 12px rgba(255,107,53,0.35);
+      white-space: nowrap;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,53,0.5); }
+
+    /* === Hero === */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 6rem 2rem 4rem; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(255,165,0,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-content {
+      display: flex; align-items: center; justify-content: center;
+      gap: 5rem; max-width: 1100px; width: 100%;
+      position: relative; z-index: 1;
+    }
+    .hero-text { flex: 1; max-width: 540px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,165,0,0.1);
+      border: 1px solid rgba(255,165,0,0.3);
+      border-radius: 50px; padding: 0.4rem 1rem;
+      font-size: 0.82rem; color: var(--fire-bright);
+      margin-bottom: 1.5rem; animation: fadeInDown 0.8s ease;
+    }
+    .hero-title {
+      font-size: 3rem; font-weight: 900; line-height: 1.2;
+      margin-bottom: 1.5rem; animation: fadeInDown 0.8s ease 0.1s both;
+    }
+    .hero-title .highlight {
+      background: linear-gradient(135deg, var(--fire-gold), var(--fire-orange));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-desc {
+      font-size: 1.1rem; color: var(--text-secondary);
+      line-height: 1.95; margin-bottom: 2.5rem;
+      animation: fadeInDown 0.8s ease 0.2s both;
+    }
+    .hero-actions {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      animation: fadeInDown 0.8s ease 0.3s both;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: linear-gradient(135deg, var(--fire-bright), var(--fire-orange));
+      color: #fff; padding: 1rem 2rem; border-radius: 50px;
+      text-decoration: none; font-weight: 700; font-size: 1rem;
+      border: none; cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 20px rgba(255,107,53,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: transparent; color: var(--fire-bright);
+      padding: 1rem 2rem; border-radius: 50px;
+      text-decoration: none; font-weight: 600; font-size: 1rem;
+      border: 2px solid rgba(255,165,0,0.35); cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-ghost:hover { border-color: var(--fire-bright); background: rgba(255,165,0,0.07); }
+
+    /* Hero flame */
+    .hero-visual {
+      flex: 0 0 340px;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeInUp 1s ease 0.4s both;
+    }
+    .fire-container {
+      position: relative; width: 280px; height: 360px;
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .fire-glow {
+      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(255,165,0,0.2) 0%, rgba(255,107,53,0.08) 40%, transparent 70%);
+      border-radius: 50%; animation: glowPulse 3s ease-in-out infinite;
+    }
+    @keyframes glowPulse {
+      0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.6; }
+      50%       { transform: translateX(-50%) scale(1.15); opacity: 1; }
+    }
+    .flame-wrapper { position: relative; width: 110px; height: 185px; margin-bottom: 18px; }
+    .flame {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 76px; height: 150px;
+      background: linear-gradient(0deg, var(--fire-crimson) 0%, var(--fire-red) 25%, var(--fire-orange) 50%, var(--fire-bright) 75%, var(--fire-gold) 100%);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: flicker 0.8s ease-in-out infinite alternate; filter: blur(1px);
+    }
+    .flame::before {
+      content: ''; position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
+      width: 52px; height: 120px;
+      background: linear-gradient(0deg, var(--fire-red) 0%, var(--fire-bright) 40%, var(--fire-gold) 100%);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: flicker 0.6s ease-in-out infinite alternate-reverse; filter: blur(1px);
+    }
+    .flame::after {
+      content: ''; position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%);
+      width: 28px; height: 74px;
+      background: linear-gradient(0deg, var(--fire-gold) 0%, #fff8dc 60%, #fffbe6 100%);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: flicker 0.5s ease-in-out infinite alternate; filter: blur(2px);
+    }
+    @keyframes flicker {
+      0%   { transform: translateX(-50%) scaleX(1)    scaleY(1)    rotate(-1deg); }
+      50%  { transform: translateX(-50%) scaleX(0.95) scaleY(1.05) rotate(1deg); }
+      100% { transform: translateX(-50%) scaleX(1.02) scaleY(0.98) rotate(-0.5deg); }
+    }
+    .logs { position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 130px; height: 38px; }
+    .log {
+      position: absolute; width: 95px; height: 16px;
+      background: linear-gradient(180deg, #8B5E3C, #5C3A20);
+      border-radius: 50px; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.3);
+    }
+    .log:nth-child(1) { bottom: 0; left: 50%; transform: translateX(-50%) rotate(-15deg); }
+    .log:nth-child(2) { bottom: 0; left: 50%; transform: translateX(-50%) rotate(15deg); }
+    .log:nth-child(3) { bottom: 9px; left: 50%; transform: translateX(-50%); }
+    .ember {
+      position: absolute; width: 4px; height: 4px;
+      background: var(--fire-gold); border-radius: 50%;
+      animation: emberFloat linear infinite;
+      box-shadow: 0 0 6px var(--fire-bright);
+    }
+    @keyframes emberFloat {
+      0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
+    }
+
+    /* === Feature sections (full-width, alternating bg) === */
+    .feature-section {
+      position: relative; z-index: 1;
+      padding: 5.5rem 2rem;
+    }
+    .feature-section:nth-child(odd)  { background: linear-gradient(180deg, var(--bg-primary), var(--bg-secondary)); }
+    .feature-section:nth-child(even) { background: var(--bg-secondary); }
+    .feature-inner {
+      max-width: 800px; margin: 0 auto;
+      display: flex; align-items: flex-start; gap: 3rem;
+    }
+    .feature-icon-wrap {
+      flex-shrink: 0;
+      width: 72px; height: 72px;
+      background: rgba(255,165,0,0.08);
+      border: 1.5px solid rgba(255,165,0,0.2);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+    }
+    .feature-body { flex: 1; }
+    .feature-tag {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 2px;
+      color: var(--fire-bright); text-transform: uppercase;
+      margin-bottom: 0.6rem; display: block;
+    }
+    .feature-title { font-size: 1.7rem; font-weight: 800; margin-bottom: 0.9rem; line-height: 1.3; }
+    .feature-desc { font-size: 0.97rem; color: var(--text-secondary); line-height: 1.85; margin-bottom: 1.1rem; }
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .feature-list li {
+      font-size: 0.9rem; color: var(--text-secondary);
+      padding-left: 1.2rem; position: relative; line-height: 1.6;
+    }
+    .feature-list li::before { content: '•'; position: absolute; left: 0; color: var(--fire-bright); }
+
+    /* === Features Quick Grid === */
+    .features-quick {
+      position: relative; z-index: 1;
+      background: linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
+      padding: 5.5rem 2rem;
+    }
+    .features-quick-inner { max-width: 880px; margin: 0 auto; }
+    .fq-header { text-align: center; margin-bottom: 2.5rem; }
+    .fq-header h2 { font-size: 1.9rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .fq-header p { font-size: 0.95rem; color: var(--text-secondary); }
+    .fq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+    .fq-card {
+      background: rgba(255,165,0,0.04);
+      border: 1px solid rgba(255,165,0,0.13);
+      border-radius: 18px; padding: 1.75rem;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+    .fq-card:hover { border-color: rgba(255,165,0,0.32); transform: translateY(-3px); }
+    .fq-card-header { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.8rem; }
+    .fq-icon {
+      width: 42px; height: 42px; flex-shrink: 0;
+      background: rgba(255,165,0,0.08);
+      border: 1px solid rgba(255,165,0,0.15);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.35rem;
+    }
+    .fq-title { font-size: 0.97rem; font-weight: 700; margin: 0; line-height: 1.35; }
+    .fq-list { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+    .fq-list li {
+      font-size: 0.86rem; color: var(--text-secondary);
+      padding-left: 1rem; position: relative; line-height: 1.55;
+    }
+    .fq-list li::before { content: '•'; position: absolute; left: 0; color: var(--fire-bright); }
+    @media (max-width: 580px) { .fq-grid { grid-template-columns: 1fr; } }
+
+    /* === Quotes === */
+    .comfort {
+      position: relative; z-index: 1;
+      background: linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
+      padding: 5.5rem 2rem;
+    }
+    .comfort-header { text-align: center; margin-bottom: 1.5rem; }
+    .comfort-header h2 { font-size: 2rem; font-weight: 800; margin-bottom: 0.75rem; }
+    .comfort-lead {
+      text-align: center; margin-bottom: 3rem;
+      font-size: 1rem; color: var(--text-secondary);
+      line-height: 1.9; max-width: 480px; margin-left: auto; margin-right: auto;
+    }
+    .quotes-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem; max-width: 880px; margin: 0 auto;
+    }
+    .quote-card {
+      position: relative; overflow: hidden;
+      background: rgba(10,25,47,0.7);
+      border: 1px solid rgba(255,165,0,0.15);
+      border-radius: 20px; padding: 2rem 1.75rem; text-align: center;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    .quote-card::before {
+      content: '\201C';
+      position: absolute; top: -0.6rem; left: 0.9rem;
+      font-size: 6rem; line-height: 1;
+      color: var(--fire-bright); opacity: 0.12;
+      font-family: Georgia, serif; pointer-events: none;
+    }
+    .quote-card:hover { transform: translateY(-4px); border-color: rgba(255,165,0,0.35); }
+    .quote-text { font-size: 0.97rem; font-weight: 500; line-height: 1.8; color: var(--text-primary); position: relative; z-index: 1; }
+
+    /* === Promise === */
+    .promise {
+      position: relative; z-index: 1;
+      background: var(--bg-primary);
+      padding: 5.5rem 2rem;
+    }
+    .promise-header { text-align: center; margin-bottom: 3rem; }
+    .promise-header h2 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .promise-header p { font-size: 0.97rem; color: var(--text-secondary); }
+    .promise-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem; max-width: 780px; margin: 0 auto;
+    }
+    .promise-item { text-align: center; padding: 1.75rem 1.5rem; }
+    .promise-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 54px; height: 54px;
+      background: rgba(255,165,0,0.08);
+      border: 2px solid rgba(255,165,0,0.18);
+      border-radius: 50%; font-size: 1.5rem; margin-bottom: 1rem;
+    }
+    .promise-item h4 { font-size: 0.97rem; font-weight: 700; margin-bottom: 0.45rem; }
+    .promise-item p { font-size: 0.86rem; color: var(--text-secondary); line-height: 1.65; }
+
+    /* === CTA === */
+    .cta {
+      position: relative; z-index: 1;
+      background: linear-gradient(180deg, var(--bg-primary), var(--bg-secondary) 50%, var(--bg-primary));
+      text-align: center; padding: 7rem 2rem;
+    }
+    .cta-fire { font-size: 3.5rem; margin-bottom: 1.5rem; display: block; animation: pulseFire 2s ease-in-out infinite; }
+    @keyframes pulseFire { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+    .cta h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.9rem; line-height: 1.3; }
+    .cta-sub { font-size: 1rem; color: var(--text-secondary); margin-bottom: 2.5rem; max-width: 420px; margin-left: auto; margin-right: auto; line-height: 1.85; }
+
+    /* === Footer === */
+    footer {
+      position: relative; z-index: 1;
+      background: var(--bg-primary);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 1.25rem 2rem;
+      display: flex; justify-content: flex-end; align-items: center;
+    }
+    .footer-copy { font-size: 0.78rem; color: rgba(170,170,170,0.4); }
+
+    /* === Reveal === */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* === Keyframes === */
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp   { from { opacity: 0; transform: translateY(40px);  } to { opacity: 1; transform: translateY(0); } }
+
+    /* === Responsive === */
+    @media (max-width: 860px) {
+      .hero-content { flex-direction: column-reverse; text-align: center; gap: 2.5rem; }
+      .hero-title { font-size: 2.4rem; }
+      .hero-actions { justify-content: center; }
+      .hero-visual { flex: none; }
+      .fire-container { width: 220px; height: 280px; }
+      .flame-wrapper { width: 85px; height: 140px; }
+      .flame { width: 56px; height: 112px; }
+      .flame::before { width: 38px; height: 90px; }
+      .flame::after  { width: 21px; height: 56px; }
+      .feature-inner { flex-direction: column; gap: 1.5rem; }
+      .feature-icon-wrap { width: 60px; height: 60px; font-size: 1.7rem; }
+      .quotes-grid { grid-template-columns: 1fr; max-width: 440px; }
+      .promise-grid { grid-template-columns: 1fr; max-width: 360px; }
+    }
+    @media (max-width: 580px) {
+      .hero-title { font-size: 1.95rem; }
+      .hero-desc { font-size: 1rem; }
+      .feature-section { padding: 4rem 1.5rem; }
+      .comfort, .promise, .cta { padding: 4rem 1.5rem; }
+      .feature-title { font-size: 1.45rem; }
+      .cta h2 { font-size: 1.75rem; }
+      .nav-cta span { display: none; }
+      .nav-cta::after { content: '↓'; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="particles-bg" id="particlesBg"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <a href="#" class="nav-logo">
+      <img src="images/ic_launcher_round.webp" alt="모닥모닥">
+      <span>모닥모닥</span>
+    </a>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <button class="lang-btn" id="btnKo" onclick="setLang('ko')">한국어</button>
+        <button class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
+      </div>
+      <a href="https://play.google.com/store/apps/details?id=com.japygo.modakmodak"
+         class="nav-cta" target="_blank" rel="noopener">
+        🔥 <span data-i18n="navCta">다운로드</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <div class="hero-text">
+        <div class="hero-badge" data-i18n="heroBadge">🔥 Android 무료 앱</div>
+        <h1 class="hero-title" data-i18n="heroTitle">
+          조용히 타오르는<br><span class="highlight">나만의 불꽃</span>
+        </h1>
+        <p class="hero-desc" data-i18n="heroDesc">
+          밤의 숲속, 조용히 타오르는 모닥불처럼<br>
+          은은하고 따뜻한 분위기 속에서<br>
+          매일 조금씩, 꾸준히 자신만의 불씨를 키워보세요.
+        </p>
+        <div class="hero-actions">
+          <a href="https://play.google.com/store/apps/details?id=com.japygo.modakmodak"
+             class="btn-primary" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3.18 23.76c.37.2.8.2 1.18-.01l12.09-6.91-2.54-2.54L3.18 23.76zM.54 1.57C.2 1.95.01 2.5.01 3.17v17.66c0 .67.19 1.22.53 1.6l.09.08 9.89-9.89v-.22L.54 1.57zM20.46 10.4l-2.71-1.55-2.84 2.84 2.84 2.84 2.73-1.56c.78-.44.78-1.13-.02-1.57zM4.36.25C3.98.04 3.55.04 3.18.25L14.38 11.44l2.54-2.54L4.36.25z"/>
+            </svg>
+            <span data-i18n="heroCta">Google Play에서 시작하기</span>
+          </a>
+          <a href="#f1" class="btn-ghost" data-i18n="heroLearn">더 알아보기 ↓</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="fire-container">
+          <div class="fire-glow"></div>
+          <div class="flame-wrapper"><div class="flame"></div></div>
+          <div class="logs">
+            <div class="log"></div><div class="log"></div><div class="log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature 1: 온전한 몰입 -->
+  <div class="feature-section" id="f1">
+    <div class="feature-inner reveal">
+      <div class="feature-icon-wrap">✨</div>
+      <div class="feature-body">
+        <span class="feature-tag" data-i18n="f1Tag">깊은 몰입</span>
+        <h2 class="feature-title" data-i18n="f1Title">깊은 몰입 속에서</h2>
+        <p class="feature-desc" data-i18n="f1Desc">복잡한 세상을 잠시 내려놓고, 온전히 나에게 집중하는 시간. 모닥모닥은 당신의 집중 시간을 방해하지 않고, 조용히 함께합니다.</p>
+        <ul class="feature-list" data-i18n-list="f1List">
+          <li>원하는 시간만큼 자유롭게 설정할 수 있는 타이머</li>
+          <li>방해받지 않는 온전한 몰입의 시간</li>
+          <li>집중이 끝나면 따뜻한 격려의 메시지</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 2: 함께 자라나는 불꽃 -->
+  <div class="feature-section" id="f2">
+    <div class="feature-inner reveal">
+      <div class="feature-icon-wrap">🌙</div>
+      <div class="feature-body">
+        <span class="feature-tag" data-i18n="f2Tag">불꽃 성장</span>
+        <h2 class="feature-title" data-i18n="f2Title">함께 자라나는 불꽃</h2>
+        <p class="feature-desc" data-i18n="f2Desc">집중할수록 조금씩 커져가는 작은 불꽃. 당신의 노력은 결코 사라지지 않고, 따뜻한 빛으로 남습니다.</p>
+        <ul class="feature-list" data-i18n-list="f2List">
+          <li>매일의 집중 시간이 쌓여 성장하는 불꽃 캐릭터</li>
+          <li>오래 키울수록 더욱 밝게 빛나는 당신만의 불꽃</li>
+          <li>꾸준함이 만들어내는 조용한 변화</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 3: 소중한 기록 -->
+  <div class="feature-section" id="f3">
+    <div class="feature-inner reveal">
+      <div class="feature-icon-wrap">💫</div>
+      <div class="feature-body">
+        <span class="feature-tag" data-i18n="f3Tag">통계 &amp; 기록</span>
+        <h2 class="feature-title" data-i18n="f3Title">작지만 소중한 순간들</h2>
+        <p class="feature-desc" data-i18n="f3Desc">매일 밤, 잠들기 전 한 시간. 이른 아침, 세상이 깨어나기 전. 언제든, 당신이 원하는 순간에 깊이 몰입해보세요.</p>
+        <ul class="feature-list" data-i18n-list="f3List">
+          <li>하루의 집중 기록을 한눈에 볼 수 있는 캘린더</li>
+          <li>꾸준히 이어온 날들이 만들어내는 아름다운 패턴</li>
+          <li>당신만의 리듬으로, 당신만의 속도로</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 4: 밤의 숲속 감성 -->
+  <div class="feature-section" id="f4">
+    <div class="feature-inner reveal">
+      <div class="feature-icon-wrap">🎨</div>
+      <div class="feature-body">
+        <span class="feature-tag" data-i18n="f4Tag">디자인</span>
+        <h2 class="feature-title" data-i18n="f4Title">밤의 숲속 감성</h2>
+        <p class="feature-desc" data-i18n="f4Desc">복잡한 기능 대신, 온전한 집중에만 집중할 수 있도록. 어두운 배경 속 은은하게 빛나는 불꽃이 고요한 집중의 공간을 만들어줍니다.</p>
+        <ul class="feature-list" data-i18n-list="f4List">
+          <li>눈이 편안한 다크 테마</li>
+          <li>부드럽게 움직이는 불꽃 애니메이션</li>
+          <li>직관적이고 간결한 화면 구성</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 5: 당신만의 방식으로 -->
+  <div class="feature-section" id="f5">
+    <div class="feature-inner reveal">
+      <div class="feature-icon-wrap">🌿</div>
+      <div class="feature-body">
+        <span class="feature-tag" data-i18n="f5Tag">자유로운 설정</span>
+        <h2 class="feature-title" data-i18n="f5Title">당신만의 방식으로</h2>
+        <p class="feature-desc" data-i18n="f5Desc">누구나 다른 리듬으로 살아갑니다. 모닥모닥은 당신만의 방식을 존중합니다.</p>
+        <ul class="feature-list" data-i18n-list="f5List">
+          <li>자유롭게 설정 가능한 집중 시간</li>
+          <li>원하는 대로 조정할 수 있는 모든 설정</li>
+          <li>당신의 습관에 맞춰 사용할 수 있는 유연한 구조</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Quick Grid -->
+  <section class="features-quick">
+    <div class="features-quick-inner">
+      <div class="fq-header reveal">
+        <h2 data-i18n="fqTitle">주요 기능</h2>
+        <p data-i18n="fqSub">모닥모닥과 함께하는 집중의 즐거움</p>
+      </div>
+      <div class="fq-grid reveal">
+        <div class="fq-card">
+          <div class="fq-card-header">
+            <div class="fq-icon">📚</div>
+            <h3 class="fq-title" data-i18n="fq1Title">뽀모도로 타이머</h3>
+          </div>
+          <ul class="fq-list" data-i18n-list="fq1List">
+            <li>25분 집중 + 5분 휴식의 검증된 학습법</li>
+            <li>커스터마이징 가능한 타이머 설정</li>
+          </ul>
+        </div>
+        <div class="fq-card">
+          <div class="fq-card-header">
+            <div class="fq-icon">🌱</div>
+            <h3 class="fq-title" data-i18n="fq2Title">귀여운 모닥불 친구</h3>
+          </div>
+          <ul class="fq-list" data-i18n-list="fq2List">
+            <li>집중할수록 자라나는 모닥불</li>
+            <li>성장하는 모닥불과 함께 동기부여</li>
+          </ul>
+        </div>
+        <div class="fq-card">
+          <div class="fq-card-header">
+            <div class="fq-icon">📊</div>
+            <h3 class="fq-title" data-i18n="fq3Title">상세한 통계</h3>
+          </div>
+          <ul class="fq-list" data-i18n-list="fq3List">
+            <li>일별/월별 집중 기록 확인</li>
+            <li>히트맵으로 한눈에 보는 학습 패턴</li>
+          </ul>
+        </div>
+        <div class="fq-card">
+          <div class="fq-card-header">
+            <div class="fq-icon">🎯</div>
+            <h3 class="fq-title" data-i18n="fq4Title">도전과 보상</h3>
+          </div>
+          <ul class="fq-list" data-i18n-list="fq4List">
+            <li>하드코어 모드로 더 강한 집중력</li>
+            <li>목표 달성 시 특별한 보상</li>
+            <li>일일 알림으로 꾸준한 학습 습관</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quotes -->
+  <section class="comfort">
+    <div class="comfort-header reveal">
+      <h2 data-i18n="comfortTitle">따뜻한 위로의 말</h2>
+    </div>
+    <p class="comfort-lead reveal" data-i18n="comfortLead">
+      모닥모닥은 완벽함을 요구하지 않습니다.<br>
+      오늘 조금 부족했어도 괜찮아요. 내일 다시 시작하면 됩니다.
+    </p>
+    <div class="quotes-grid reveal">
+      <div class="quote-card">
+        <p class="quote-text" data-i18n="quote1">그 한 걸음은 당신을<br>더 멀리 데려갈 거예요.</p>
+      </div>
+      <div class="quote-card">
+        <p class="quote-text" data-i18n="quote2">집중의 불씨를 피운 것만으로도<br>충분해요.</p>
+      </div>
+      <div class="quote-card">
+        <p class="quote-text" data-i18n="quote3">천천히, 당신만의 속도로<br>가도 괜찮아요.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Promise -->
+  <section class="promise">
+    <div class="promise-header reveal">
+      <h2 data-i18n="promiseTitle">모닥모닥이 당신에게 드리는 약속</h2>
+      <p data-i18n="promiseSub">조용히, 은은하게, 당신의 집중을 응원합니다.</p>
+    </div>
+    <div class="promise-grid reveal">
+      <div class="promise-item">
+        <div class="promise-icon">🕯️</div>
+        <h4 data-i18n="p1Title">광고로 방해하지 않습니다</h4>
+        <p data-i18n="p1Desc">당신의 집중을 해치는 강제 광고는 없습니다.</p>
+      </div>
+      <div class="promise-item">
+        <div class="promise-icon">🔒</div>
+        <h4 data-i18n="p2Title">당신의 기기에만 저장됩니다</h4>
+        <p data-i18n="p2Desc">모든 기록은 오직 당신의 기기 안에만. 외부로 전송되지 않습니다.</p>
+      </div>
+      <div class="promise-item">
+        <div class="promise-icon">🌿</div>
+        <h4 data-i18n="p3Title">인터넷 없이도 함께합니다</h4>
+        <p data-i18n="p3Desc">언제 어디서든, 언제나 당신 곁에 있습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta" id="download">
+    <span class="cta-fire">🔥</span>
+    <h2 class="reveal" data-i18n="ctaTitle">오늘 밤, 조용한 불씨를 피워보세요</h2>
+    <p class="cta-sub reveal" data-i18n="ctaSub">
+      깊은 몰입 속에서<br>
+      조용히 타오르는, 집중할수록 커져가는<br>
+      당신의 불씨를 만나보세요.
+    </p>
+    <div class="reveal">
+      <a href="https://play.google.com/store/apps/details?id=com.japygo.modakmodak"
+         class="btn-primary" target="_blank" rel="noopener"
+         style="font-size: 1.05rem; padding: 1.1rem 2.6rem;"
+         data-i18n="ctaBtn">
+        🔥 무료로 다운로드
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p class="footer-copy" data-i18n="footerCopy">© 2025 모닥모닥. All rights reserved.</p>
+  </footer>
+
+  <script>
+    var T = {
+      ko: {
+        navCta: '다운로드',
+        heroBadge: '🔥 Android 무료 앱',
+        heroTitle: '조용히 타오르는<br><span class="highlight">나만의 불꽃</span>',
+        heroDesc: '밤의 숲속, 조용히 타오르는 모닥불처럼<br>은은하고 따뜻한 분위기 속에서<br>매일 조금씩, 꾸준히 자신만의 불씨를 키워보세요.',
+        heroCta: 'Google Play에서 시작하기',
+        heroLearn: '더 알아보기 ↓',
+        f1Tag: '깊은 몰입',
+        f1Title: '깊은 몰입 속에서',
+        f1Desc: '복잡한 세상을 잠시 내려놓고, 온전히 나에게 집중하는 시간. 모닥모닥은 당신의 집중 시간을 방해하지 않고, 조용히 함께합니다.',
+        f1List: ['원하는 시간만큼 자유롭게 설정할 수 있는 타이머', '방해받지 않는 온전한 몰입의 시간', '집중이 끝나면 따뜻한 격려의 메시지'],
+        f2Tag: '불꽃 성장',
+        f2Title: '함께 자라나는 불꽃',
+        f2Desc: '집중할수록 조금씩 커져가는 작은 불꽃. 당신의 노력은 결코 사라지지 않고, 따뜻한 빛으로 남습니다.',
+        f2List: ['매일의 집중 시간이 쌓여 성장하는 불꽃 캐릭터', '오래 키울수록 더욱 밝게 빛나는 당신만의 불꽃', '꾸준함이 만들어내는 조용한 변화'],
+        f3Tag: '통계 & 기록',
+        f3Title: '작지만 소중한 순간들',
+        f3Desc: '매일 밤, 잠들기 전 한 시간. 이른 아침, 세상이 깨어나기 전. 언제든, 당신이 원하는 순간에 깊이 몰입해보세요.',
+        f3List: ['하루의 집중 기록을 한눈에 볼 수 있는 캘린더', '꾸준히 이어온 날들이 만들어내는 아름다운 패턴', '당신만의 리듬으로, 당신만의 속도로'],
+        f4Tag: '디자인',
+        f4Title: '밤의 숲속 감성',
+        f4Desc: '복잡한 기능 대신, 온전한 집중에만 집중할 수 있도록. 어두운 배경 속 은은하게 빛나는 불꽃이 고요한 집중의 공간을 만들어줍니다.',
+        f4List: ['눈이 편안한 다크 테마', '부드럽게 움직이는 불꽃 애니메이션', '직관적이고 간결한 화면 구성'],
+        f5Tag: '자유로운 설정',
+        f5Title: '당신만의 방식으로',
+        f5Desc: '누구나 다른 리듬으로 살아갑니다. 모닥모닥은 당신만의 방식을 존중합니다.',
+        f5List: ['자유롭게 설정 가능한 집중 시간', '원하는 대로 조정할 수 있는 모든 설정', '당신의 습관에 맞춰 사용할 수 있는 유연한 구조'],
+        fqTitle: '주요 기능',
+        fqSub: '모닥모닥과 함께하는 집중의 즐거움',
+        fq1Title: '뽀모도로 타이머',
+        fq1List: ['25분 집중 + 5분 휴식의 검증된 학습법', '커스터마이징 가능한 타이머 설정'],
+        fq2Title: '귀여운 모닥불 친구',
+        fq2List: ['집중할수록 자라나는 모닥불', '성장하는 모닥불과 함께 동기부여'],
+        fq3Title: '상세한 통계',
+        fq3List: ['일별/월별 집중 기록 확인', '히트맵으로 한눈에 보는 학습 패턴'],
+        fq4Title: '도전과 보상',
+        fq4List: ['하드코어 모드로 더 강한 집중력', '목표 달성 시 특별한 보상', '일일 알림으로 꾸준한 학습 습관'],
+        comfortTitle: '따뜻한 위로의 말',
+        comfortLead: '모닥모닥은 완벽함을 요구하지 않습니다.<br>오늘 조금 부족했어도 괜찮아요. 내일 다시 시작하면 됩니다.',
+        quote1: '그 한 걸음은 당신을<br>더 멀리 데려갈 거예요.',
+        quote2: '집중의 불씨를 피운 것만으로도<br>충분해요.',
+        quote3: '천천히, 당신만의 속도로<br>가도 괜찮아요.',
+        promiseTitle: '모닥모닥이 당신에게 드리는 약속',
+        promiseSub: '조용히, 은은하게, 당신의 집중을 응원합니다.',
+        p1Title: '광고로 방해하지 않습니다',
+        p1Desc: '당신의 집중을 해치는 강제 광고는 없습니다.',
+        p2Title: '당신의 기기에만 저장됩니다',
+        p2Desc: '모든 기록은 오직 당신의 기기 안에만. 외부로 전송되지 않습니다.',
+        p3Title: '인터넷 없이도 함께합니다',
+        p3Desc: '언제 어디서든, 언제나 당신 곁에 있습니다.',
+        ctaTitle: '오늘 밤, 조용한 불씨를 피워보세요',
+        ctaSub: '깊은 몰입 속에서<br>조용히 타오르는, 집중할수록 커져가는<br>당신의 불씨를 만나보세요.',
+        ctaBtn: '🔥 무료로 다운로드',
+        footerCopy: '© 2025 모닥모닥. All rights reserved.'
+      },
+      en: {
+        navCta: 'Download',
+        heroBadge: '🔥 Free Android App',
+        heroTitle: 'A Quietly Burning<br><span class="highlight">Flame</span>',
+        heroDesc: 'Like a campfire burning quietly in the forest at night,<br>nurture your own ember in a warm, gentle atmosphere,<br>little by little, every day.',
+        heroCta: 'Download on Google Play',
+        heroLearn: 'Learn More ↓',
+        f1Tag: 'Deep Focus',
+        f1Title: 'Dive Deep into Focus',
+        f1Desc: 'A time to set aside the complex world and focus entirely on yourself. ModakModak stays quietly by your side, never interrupting your concentration.',
+        f1List: ['Freely customizable timer for any duration', 'Undisturbed moments of pure immersion', 'Warm encouragement when your focus session ends'],
+        f2Tag: 'Growing Flame',
+        f2Title: 'A Flame That Grows With You',
+        f2Desc: 'A small flame that gradually grows with your focus. Your efforts never disappear — they remain as a warm, lasting light.',
+        f2List: ['A flame character that grows with your daily focus time', 'Your unique flame that shines brighter the longer you nurture it', 'Quiet transformation created by consistency'],
+        f3Tag: 'Stats & Records',
+        f3Title: 'Small but Precious Moments',
+        f3Desc: 'An hour before bed each night. Early in the morning, before the world awakens. Anytime — immerse yourself deeply whenever you wish.',
+        f3List: ['A calendar that shows your focus records at a glance', 'Beautiful patterns created by the days you\'ve continued', 'At your own rhythm, at your own pace'],
+        f4Tag: 'Design',
+        f4Title: 'Forest-at-Night Aesthetic',
+        f4Desc: 'Instead of complex features, a quiet space where you can focus solely on focusing. A softly glowing flame in a dark background creates a serene environment.',
+        f4List: ['Dark theme that\'s easy on the eyes', 'Smoothly animated flame', 'Intuitive and clean interface'],
+        f5Tag: 'Customization',
+        f5Title: 'Your Own Way',
+        f5Desc: 'Everyone lives at a different rhythm. ModakModak respects your unique way.',
+        f5List: ['Freely adjustable focus time', 'All settings customizable to your preference', 'Flexible structure that adapts to your habits'],
+        fqTitle: 'Key Features',
+        fqSub: 'The joy of focus with ModakModak',
+        fq1Title: 'Pomodoro Timer',
+        fq1List: ['Proven 25min focus + 5min break method', 'Customizable timer settings'],
+        fq2Title: 'Growing Campfire',
+        fq2List: ['Your campfire grows as you focus', 'Visual motivation companion'],
+        fq3Title: 'Statistics',
+        fq3List: ['Daily and monthly focus tracking', 'Heatmap visualization of your study patterns'],
+        fq4Title: 'Challenges & Rewards',
+        fq4List: ['Hardcore mode for intense focus', 'Achievement rewards for hitting your goals', 'Daily reminders to build consistent habits'],
+        comfortTitle: 'Words of Warm Comfort',
+        comfortLead: 'ModakModak doesn\'t demand perfection.<br>It\'s okay if today wasn\'t quite enough. You can start again tomorrow.',
+        quote1: 'That one step will<br>take you further.',
+        quote2: 'Just lighting the ember<br>of focus is enough.',
+        quote3: 'It\'s okay to go slowly,<br>at your own pace.',
+        promiseTitle: 'ModakModak\'s Promise to You',
+        promiseSub: 'Quietly, gently cheering on your focus.',
+        p1Title: 'We don\'t interrupt with ads',
+        p1Desc: 'No forced ads that disrupt your concentration.',
+        p2Title: 'Your data stays on your device',
+        p2Desc: 'All records stay only on your device. Nothing is sent outside.',
+        p3Title: 'Always with you',
+        p3Desc: 'Anytime, anywhere — always by your side.',
+        ctaTitle: 'Light a quiet ember tonight',
+        ctaSub: 'Deep in focus,<br>a quiet flame that grows<br>with every moment of concentration—<br>Discover your ember.',
+        ctaBtn: '🔥 Download for Free',
+        footerCopy: '© 2025 ModakModak. All rights reserved.'
+      }
+    };
+
+    function setLang(lang) {
+      document.documentElement.lang = lang;
+      document.getElementById('btnKo').classList.toggle('active', lang === 'ko');
+      document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        if (T[lang][key] !== undefined) el.innerHTML = T[lang][key];
+      });
+      document.querySelectorAll('[data-i18n-list]').forEach(function(ul) {
+        var key = ul.getAttribute('data-i18n-list');
+        var items = T[lang][key];
+        if (!Array.isArray(items)) return;
+        ul.querySelectorAll('li').forEach(function(li, i) { if (items[i]) li.textContent = items[i]; });
+      });
+      document.title = lang === 'en' ? 'ModakModak - Deep Focus' : '모닥모닥 - 깊은 몰입의 순간';
+      try { localStorage.setItem('modak-lang', lang); } catch(e) {}
+    }
+
+    (function() {
+      var saved = ''; try { saved = localStorage.getItem('modak-lang') || ''; } catch(e) {}
+      var ul = (navigator.language || navigator.userLanguage || 'ko').toLowerCase();
+      setLang(saved || (ul.startsWith('ko') ? 'ko' : 'en'));
+    })();
+
+    /* Particles */
+    (function() {
+      var c = document.getElementById('particlesBg');
+      for (var i = 0; i < 28; i++) {
+        var p = document.createElement('div'); p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (6 + Math.random() * 10) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        var s = (2 + Math.random() * 3) + 'px'; p.style.width = p.style.height = s;
+        c.appendChild(p);
+      }
+    })();
+
+    /* Embers */
+    (function() {
+      var c = document.querySelector('.fire-container');
+      if (!c) return;
+      for (var i = 0; i < 8; i++) {
+        var e = document.createElement('div'); e.className = 'ember';
+        e.style.left = (40 + Math.random() * 40) + '%';
+        e.style.bottom = (30 + Math.random() * 30) + '%';
+        e.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+        e.style.setProperty('--dy', (-80 - Math.random() * 60) + 'px');
+        e.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+        e.style.animationDelay = (Math.random() * 3) + 's';
+        var s = (2 + Math.random() * 4) + 'px'; e.style.width = e.style.height = s;
+        c.appendChild(e);
+      }
+    })();
+
+    /* Navbar scroll */
+    var navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', function() {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    /* Scroll reveal */
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+  </script>
+</body>
+</html>
